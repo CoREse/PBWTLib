@@ -1,0 +1,16 @@
+pbwtMerge.cpp: In function 'pbwt_reader_t* pbwt_reader_init(const char**, int)':
+pbwtMerge.cpp:24:32: error: invalid conversion from 'void*' to 'pbwt_reader_t*' [-fpermissive]
+  pbwt_reader_t *reader = calloc(1,sizeof(pbwt_reader_t));
+                                ^
+pbwtMerge.cpp:35:71: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+   if ( !fp ) die("failed to open %s: %s\n", fnames[i], strerror(errno));
+                                                                       ^
+pbwtMerge.cpp:40:23: error: invalid conversion from 'void*' to 'char*' [-fpermissive]
+   char *fname = malloc(sizeof(char)*(j+2));
+                       ^
+pbwtMerge.cpp:44:67: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+   if ( !fp ) die("failed to open %s: %s\n", fname, strerror(errno));
+                                                                   ^
+pbwtMerge.cpp:57:122: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+    die("Different chromosomes: %s in %s vs %s in %s\n", reader->pbwt[0]->chrom,fnames[0],reader->pbwt[i]->chrom,fnames[i]);
+                                                                                                                          ^
