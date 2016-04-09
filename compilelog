@@ -1,16 +1,336 @@
-pbwtMerge.cpp: In function 'pbwt_reader_t* pbwt_reader_init(const char**, int)':
-pbwtMerge.cpp:24:32: error: invalid conversion from 'void*' to 'pbwt_reader_t*' [-fpermissive]
-  pbwt_reader_t *reader = calloc(1,sizeof(pbwt_reader_t));
-                                ^
-pbwtMerge.cpp:35:71: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
-   if ( !fp ) die("failed to open %s: %s\n", fnames[i], strerror(errno));
-                                                                       ^
-pbwtMerge.cpp:40:23: error: invalid conversion from 'void*' to 'char*' [-fpermissive]
-   char *fname = malloc(sizeof(char)*(j+2));
+pbwtMatch.cpp: In function 'void checkMatchMaximal(uchar*, uchar*, int, int, int)':
+pbwtMatch.cpp:37:54: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+     die ("match not maximal - can extend backwards\n") ;
+                                                      ^
+pbwtMatch.cpp:39:53: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+     die ("match not maximal - can extend forwards\n") ;
+                                                     ^
+pbwtMatch.cpp:42:42: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+       die ("match not a match at %d\n", i) ;
+                                          ^
+pbwtMatch.cpp: In function 'void reportMatch(int, int, int, int)':
+pbwtMatch.cpp:55:7: error: 'isCheck' was not declared in this scope
+   if (isCheck)   /* check match is a real match and maximal */
+       ^
+pbwtMatch.cpp: In function 'void matchLongWithin1(PBWT*, int, void (*)(int, int, int, int))':
+pbwtMatch.cpp:65:3: error: 'PbwtCursor' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+   ^
+pbwtMatch.cpp:65:15: error: 'u' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+               ^
+pbwtMatch.cpp:65:50: error: 'pbwtCursorCreate' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+                                                  ^
+pbwtMatch.cpp:81:44: error: 'pbwtCursorDestroy' was not declared in this scope
+   free(a) ; free(b) ;  pbwtCursorDestroy (u) ;
+                                            ^
+pbwtMatch.cpp: In function 'void matchLongWithin2(PBWT*, int, void (*)(int, int, int, int))':
+pbwtMatch.cpp:89:3: error: 'PbwtCursor' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+   ^
+pbwtMatch.cpp:89:15: error: 'u' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+               ^
+pbwtMatch.cpp:89:50: error: 'pbwtCursorCreate' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+                                                  ^
+pbwtMatch.cpp:108:37: error: 'pbwtCursorForwardsReadAD' was not declared in this scope
+       pbwtCursorForwardsReadAD (u, k) ;
+                                     ^
+pbwtMatch.cpp:111:23: error: 'pbwtCursorDestroy' was not declared in this scope
+   pbwtCursorDestroy (u) ;
                        ^
-pbwtMerge.cpp:44:67: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
-   if ( !fp ) die("failed to open %s: %s\n", fname, strerror(errno));
-                                                                   ^
-pbwtMerge.cpp:57:122: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
-    die("Different chromosomes: %s in %s vs %s in %s\n", reader->pbwt[0]->chrom,fnames[0],reader->pbwt[i]->chrom,fnames[i]);
-                                                                                                                          ^
+pbwtMatch.cpp: In function 'void matchMaximalWithin(PBWT*, void (*)(int, int, int, int))':
+pbwtMatch.cpp:118:3: error: 'PbwtCursor' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+   ^
+pbwtMatch.cpp:118:15: error: 'u' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+               ^
+pbwtMatch.cpp:118:50: error: 'pbwtCursorCreate' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+                                                  ^
+pbwtMatch.cpp:137:37: error: 'pbwtCursorForwardsReadAD' was not declared in this scope
+       pbwtCursorForwardsReadAD (u, k) ;
+                                     ^
+pbwtMatch.cpp:140:23: error: 'pbwtCursorDestroy' was not declared in this scope
+   pbwtCursorDestroy (u) ;
+                       ^
+pbwtMatch.cpp: In function 'void pbwtLongMatches(PBWT*, int)':
+pbwtMatch.cpp:150:3: error: 'PbwtCursor' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+   ^
+pbwtMatch.cpp:150:15: error: 'u' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+               ^
+pbwtMatch.cpp:150:50: error: 'pbwtCursorCreate' was not declared in this scope
+   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+                                                  ^
+pbwtMatch.cpp:152:68: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+   if (!p || !p->yz) die ("option -longWithin called without a PBWT") ;
+                                                                    ^
+pbwtMatch.cpp:153:56: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+   if (L < 0) die ("L %d for longWithin must be >= 0", L) ;
+                                                        ^
+pbwtMatch.cpp:155:7: error: 'isCheck' was not declared in this scope
+   if (isCheck) { checkHapsA = checkHapsB = pbwtHaplotypes(p) ; Ncheck = p->N ; }
+       ^
+pbwtMatch.cpp:155:60: error: 'pbwtHaplotypes' was not declared in this scope
+   if (isCheck) { checkHapsA = checkHapsB = pbwtHaplotypes(p) ; Ncheck = p->N ; }
+                                                            ^
+pbwtMatch.cpp:157:7: error: 'isStats' was not declared in this scope
+   if (isStats)
+       ^
+pbwtMatch.cpp:165:7: error: 'isStats' was not declared in this scope
+   if (isStats)
+       ^
+pbwtMatch.cpp:175:16: error: 'logFile' was not declared in this scope
+       fprintf (logFile, "Average %.1f matches per sample\n", nTot/(double)p->M) ;
+                ^
+pbwtMatch.cpp:179:23: error: 'pbwtCursorDestroy' was not declared in this scope
+   pbwtCursorDestroy (u) ;
+                       ^
+pbwtMatch.cpp:180:7: error: 'isCheck' was not declared in this scope
+   if (isCheck) 
+       ^
+pbwtMatch.cpp: In function 'void matchSequencesNaive(PBWT*, FILE*)':
+pbwtMatch.cpp:195:25: error: 'pbwtRead' was not declared in this scope
+   PBWT *q = pbwtRead (fp) ; /* q for "query" of course */
+                         ^
+pbwtMatch.cpp:196:36: error: 'pbwtHaplotypes' was not declared in this scope
+   uchar **query = pbwtHaplotypes (q) ; /* make the query sequences */
+                                    ^
+pbwtMatch.cpp:204:91: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+   if (q->N != p->N) die ("query length in matchSequences %d != PBWT length %d", q->N, p->N) ;
+                                                                                           ^
+pbwtMatch.cpp:206:12: error: 'logFile' was not declared in this scope
+   fprintf (logFile, "Made haplotypes: ") ; timeUpdate (logFile) ;
+            ^
+pbwtMatch.cpp:208:7: error: 'isCheck' was not declared in this scope
+   if (isCheck) { checkHapsA = query ; checkHapsB = reference ; Ncheck = p->N ; }
+       ^
+pbwtMatch.cpp:243:17: error: 'pbwtDestroy' was not declared in this scope
+   pbwtDestroy (q) ;
+                 ^
+pbwtMatch.cpp: In function 'void matchSequencesIndexed(PBWT*, FILE*)':
+pbwtMatch.cpp:256:25: error: 'pbwtRead' was not declared in this scope
+   PBWT *q = pbwtRead (fp) ; /* q for "query" of course */
+                         ^
+pbwtMatch.cpp:257:36: error: 'pbwtHaplotypes' was not declared in this scope
+   uchar **query = pbwtHaplotypes (q) ; /* make the query sequences */
+                                    ^
+pbwtMatch.cpp:260:3: error: 'PbwtCursor' was not declared in this scope
+   PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
+   ^
+pbwtMatch.cpp:260:15: error: 'up' was not declared in this scope
+   PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
+               ^
+pbwtMatch.cpp:260:51: error: 'pbwtCursorCreate' was not declared in this scope
+   PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
+                                                   ^
+pbwtMatch.cpp:267:91: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+   if (q->N != p->N) die ("query length in matchSequences %d != PBWT length %d", q->N, p->N) ;
+                                                                                           ^
+pbwtMatch.cpp:279:31: error: 'pbwtCursorCalculateU' was not declared in this scope
+       pbwtCursorCalculateU (up) ;
+                               ^
+pbwtMatch.cpp:281:38: error: 'pbwtCursorForwardsReadAD' was not declared in this scope
+       pbwtCursorForwardsReadAD (up, k) ;
+                                      ^
+pbwtMatch.cpp:285:24: error: 'pbwtCursorDestroy' was not declared in this scope
+   pbwtCursorDestroy (up) ;
+                        ^
+pbwtMatch.cpp:287:12: error: 'logFile' was not declared in this scope
+   fprintf (logFile, "Made haplotypes and indices: ") ; timeUpdate (logFile) ;
+            ^
+pbwtMatch.cpp:289:7: error: 'isCheck' was not declared in this scope
+   if (isCheck) { checkHapsA = query ; checkHapsB = reference ; Ncheck = p->N ; }
+       ^
+pbwtMatch.cpp:334:17: error: 'pbwtDestroy' was not declared in this scope
+   pbwtDestroy (q) ;
+                 ^
+pbwtMatch.cpp: In function 'void matchSequencesDynamic(PBWT*, FILE*)':
+pbwtMatch.cpp:353:25: error: 'pbwtRead' was not declared in this scope
+   PBWT *q = pbwtRead (fp) ; /* q for "query" of course */
+                         ^
+pbwtMatch.cpp:354:41: error: 'matchSequencesSweep' was not declared in this scope
+   matchSequencesSweep (p, q, reportMatch) ;
+                                         ^
+pbwtMatch.cpp:355:17: error: 'pbwtDestroy' was not declared in this scope
+   pbwtDestroy (q) ;
+                 ^
+pbwtMatch.cpp: In function 'void matchSequencesSweep(PBWT*, PBWT*, void (*)(int, int, int, int))':
+pbwtMatch.cpp:364:91: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+   if (q->N != p->N) die ("query length in matchSequences %d != PBWT length %d", q->N, p->N) ;
+                                                                                           ^
+pbwtMatch.cpp:365:3: error: 'PbwtCursor' was not declared in this scope
+   PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
+   ^
+pbwtMatch.cpp:365:15: error: 'up' was not declared in this scope
+   PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
+               ^
+pbwtMatch.cpp:365:51: error: 'pbwtCursorCreate' was not declared in this scope
+   PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
+                                                   ^
+pbwtMatch.cpp:366:15: error: 'uq' was not declared in this scope
+   PbwtCursor *uq = pbwtCursorCreate (q, TRUE, TRUE) ;
+               ^
+pbwtMatch.cpp:371:7: error: 'isCheck' was not declared in this scope
+   if (isCheck) { checkHapsA = pbwtHaplotypes (q) ; checkHapsB = pbwtHaplotypes (p) ; Ncheck = p->N ; }
+       ^
+pbwtMatch.cpp:371:48: error: 'pbwtHaplotypes' was not declared in this scope
+   if (isCheck) { checkHapsA = pbwtHaplotypes (q) ; checkHapsB = pbwtHaplotypes (p) ; Ncheck = p->N ; }
+                                                ^
+pbwtMatch.cpp:405:20: error: 'logFile' was not declared in this scope
+         { fprintf (logFile, "no match to query %d value %d at site %d\n", 
+                    ^
+pbwtMatch.cpp:416:31: error: 'pbwtCursorCalculateU' was not declared in this scope
+       pbwtCursorCalculateU (up) ;
+                               ^
+pbwtMatch.cpp:419:46: error: 'pbwtCursorMap' was not declared in this scope
+    f[jj] = pbwtCursorMap (up, uq->y[j], f[jj]) ;
+                                              ^
+pbwtMatch.cpp:424:38: error: 'pbwtCursorForwardsReadAD' was not declared in this scope
+       pbwtCursorForwardsReadAD (up, k) ;
+                                      ^
+pbwtMatch.cpp:425:33: error: 'pbwtCursorForwardsRead' was not declared in this scope
+       pbwtCursorForwardsRead (uq) ;
+                                 ^
+pbwtMatch.cpp:437:12: error: 'logFile' was not declared in this scope
+   fprintf (logFile, "Average number of best matches including alternates %.1f, Average length %.1f, Av number per position %.1f\n", 
+            ^
+pbwtMatch.cpp:440:24: error: 'pbwtCursorDestroy' was not declared in this scope
+   pbwtCursorDestroy (up) ; pbwtCursorDestroy (uq) ;
+                        ^
+pbwtMatch.cpp: At global scope:
+pbwtMatch.cpp:451:53: error: 'PbwtCursor' has not been declared
+ static void reportAndUpdate (int j, int k, uchar x, PbwtCursor *up, int *f, int *d, BOOL isSparse)
+                                                     ^
+pbwtMatch.cpp: In function 'void reportAndUpdate(int, int, uchar, int*, int*, int*, BOOL)':
+pbwtMatch.cpp:456:24: error: request for member 'M' in '* up', which is of non-class type 'int'
+   while (++iPlus < up->M && up->d[iPlus] <= d[j])
+                        ^
+pbwtMatch.cpp:456:33: error: request for member 'd' in '* up', which is of non-class type 'int'
+   while (++iPlus < up->M && up->d[iPlus] <= d[j])
+                                 ^
+pbwtMatch.cpp:457:13: error: request for member 'y' in '* up', which is of non-class type 'int'
+     if (up->y[iPlus] == x) { f[j] = iPlus ; return ; }
+             ^
+pbwtMatch.cpp:460:73: error: request for member 'a' in '* up', which is of non-class type 'int'
+   int i ; for (i = f[j] ; i < iPlus ; ++i) (*sweepSparseReport) (j, up->a[i], dj, k, isSparse) ;
+                                                                         ^
+pbwtMatch.cpp:463:7: error: 'isCheck' was not declared in this scope
+   if (isCheck && isSparse) /* local sparse version of checkMatchMaximal() */
+       ^
+pbwtMatch.cpp:465:55: error: request for member 'a' in '* up', which is of non-class type 'int'
+       { uchar *x = checkHapsA[j], *y = checkHapsB[up->a[i]] ;
+                                                       ^
+pbwtMatch.cpp:467:51: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+    die ("match not maximal - can extend backwards") ;
+                                                   ^
+pbwtMatch.cpp:469:50: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+    die ("match not maximal - can extend forwards") ;
+                                                  ^
+pbwtMatch.cpp:471:60: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+      if (x[ii] != y[ii]) die ("match not a match at %d", ii) ;
+                                                            ^
+pbwtMatch.cpp:477:28: error: request for member 'M' in '* up', which is of non-class type 'int'
+   int dPlus = (iPlus < up->M) ? up->d[iPlus] : (isSparse ? k/nSparseStore : k) ;
+                            ^
+pbwtMatch.cpp:477:37: error: request for member 'd' in '* up', which is of non-class type 'int'
+   int dPlus = (iPlus < up->M) ? up->d[iPlus] : (isSparse ? k/nSparseStore : k) ;
+                                     ^
+pbwtMatch.cpp:478:20: error: request for member 'd' in '* up', which is of non-class type 'int'
+   int dMinus = up->d[iMinus] ;
+                    ^
+pbwtMatch.cpp:482:13: error: request for member 'd' in '* up', which is of non-class type 'int'
+  while (up->d[iMinus] <= dMinus) /* up->d[0] = k+1 prevents underflow */
+             ^
+pbwtMatch.cpp:483:12: error: request for member 'y' in '* up', which is of non-class type 'int'
+    if (up->y[--iMinus] == x) i = iMinus ;
+            ^
+pbwtMatch.cpp:485:15: error: request for member 'd' in '* up', which is of non-class type 'int'
+  dMinus = up->d[iMinus] ;
+               ^
+pbwtMatch.cpp:488:28: error: request for member 'M' in '* up', which is of non-class type 'int'
+       { while (iPlus < up->M && up->d[iPlus] <= dPlus)
+                            ^
+pbwtMatch.cpp:488:37: error: request for member 'd' in '* up', which is of non-class type 'int'
+       { while (iPlus < up->M && up->d[iPlus] <= dPlus)
+                                     ^
+pbwtMatch.cpp:489:12: error: request for member 'y' in '* up', which is of non-class type 'int'
+    if (up->y[iPlus] == x) { f[j] = iPlus ; d[j] = dPlus ; return ; }
+            ^
+pbwtMatch.cpp:491:23: error: request for member 'M' in '* up', which is of non-class type 'int'
+  dPlus = (iPlus < up->M) ? up->d[iPlus] : (isSparse ? k/nSparseStore : k) ;
+                       ^
+pbwtMatch.cpp:491:32: error: request for member 'd' in '* up', which is of non-class type 'int'
+  dPlus = (iPlus < up->M) ? up->d[iPlus] : (isSparse ? k/nSparseStore : k) ;
+                                ^
+pbwtMatch.cpp:492:30: error: request for member 'M' in '* up', which is of non-class type 'int'
+  if (!iMinus && iPlus == up->M) 
+                              ^
+pbwtMatch.cpp:493:15: error: 'logFile' was not declared in this scope
+    { fprintf (logFile, "no match to query %d value %d at site %d\n", j, x, k) ;
+               ^
+pbwtMatch.cpp: In function 'void matchSequencesSweepSparse(PBWT*, PBWT*, int, void (*)(int, int, int, int, BOOL))':
+pbwtMatch.cpp:505:91: warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+   if (q->N != p->N) die ("query length in matchSequences %d != PBWT length %d", q->N, p->N) ;
+                                                                                           ^
+pbwtMatch.cpp:506:3: error: 'PbwtCursor' was not declared in this scope
+   PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
+   ^
+pbwtMatch.cpp:506:15: error: 'up' was not declared in this scope
+   PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
+               ^
+pbwtMatch.cpp:506:51: error: 'pbwtCursorCreate' was not declared in this scope
+   PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
+                                                   ^
+pbwtMatch.cpp:507:15: error: 'uq' was not declared in this scope
+   PbwtCursor *uq = pbwtCursorCreate (q, TRUE, TRUE) ;
+               ^
+pbwtMatch.cpp:508:16: error: 'upp' was not declared in this scope
+   PbwtCursor **upp ;
+                ^
+In file included from pbwt.h:24:0,
+                 from pbwtMatch.cpp:23:
+utils.h:49:31: error: expected primary-expression before ')' token
+ #define myalloc(n,type) (type*)_myalloc((n)*sizeof(type))
+                               ^
+pbwtMatch.cpp:515:13: note: in expansion of macro 'myalloc'
+     { upp = myalloc (nSparse, PbwtCursor*) ; 
+             ^
+pbwtMatch.cpp:519:44: error: 'pbwtNakedCursorCreate' was not declared in this scope
+  { upp[kk] = pbwtNakedCursorCreate (p->M, 0) ;
+                                            ^
+pbwtMatch.cpp:527:7: error: 'isCheck' was not declared in this scope
+   if (isCheck) { checkHapsA = pbwtHaplotypes (q) ; checkHapsB = pbwtHaplotypes (p) ; Ncheck = p->N ; }
+       ^
+pbwtMatch.cpp:527:48: error: 'pbwtHaplotypes' was not declared in this scope
+   if (isCheck) { checkHapsA = pbwtHaplotypes (q) ; checkHapsB = pbwtHaplotypes (p) ; Ncheck = p->N ; }
+                                                ^
+pbwtMatch.cpp:547:31: error: 'pbwtCursorCalculateU' was not declared in this scope
+       pbwtCursorCalculateU (up) ;
+                               ^
+pbwtMatch.cpp:550:46: error: 'pbwtCursorMap' was not declared in this scope
+    f[jj] = pbwtCursorMap (up, uq->y[j], f[jj]) ;
+                                              ^
+pbwtMatch.cpp:559:65: error: 'pbwtCursorMap' was not declared in this scope
+        ff[kk][jj] = pbwtCursorMap (upp[kk], uq->y[j], ff[kk][jj]) ;
+                                                                 ^
+pbwtMatch.cpp:563:44: error: 'pbwtCursorForwardsAD' was not declared in this scope
+    pbwtCursorForwardsAD (upp[kk], k/nSparse) ;
+                                            ^
+pbwtMatch.cpp:567:38: error: 'pbwtCursorForwardsReadAD' was not declared in this scope
+       pbwtCursorForwardsReadAD (up, k) ;
+                                      ^
+pbwtMatch.cpp:568:33: error: 'pbwtCursorForwardsRead' was not declared in this scope
+       pbwtCursorForwardsRead (uq) ;
+                                 ^
+pbwtMatch.cpp:591:12: error: 'logFile' was not declared in this scope
+   fprintf (logFile, "Average number of best matches including alternates %.1f, Average length %.1f, Av number per position %.1f\n", 
+            ^
+pbwtMatch.cpp:594:24: error: 'pbwtCursorDestroy' was not declared in this scope
+   pbwtCursorDestroy (up) ; pbwtCursorDestroy (uq) ;
+                        ^

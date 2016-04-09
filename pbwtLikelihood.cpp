@@ -34,12 +34,12 @@ double lineSearchPositive (double xInit, double tol, double (*function)(double))
   double x2, y2 ;
   while (y0 < y1)
     { x2 = 3*x1 - 2*x0 ; if (x2 > 2.0*x1) x2 = 2.0*x1 ; y2 = (*function)(x2) ;
-      if (isCheck) printf ("x0 %.4f %.4f > x1 %.4f %.4f\n", x0, y0, x1, y1) ;
+      if (PBWT::isCheck) printf ("x0 %.4f %.4f > x1 %.4f %.4f\n", x0, y0, x1, y1) ;
       if (y1 > y2) break ;
       x0 = x1 ; y0 = y1 ; x1 = x2 ; y1 = y2 ;
     }
   while (y0 > y1)
-    { if (isCheck) printf ("x0 %.4f %.4f < x1 %.4f %.4f\n", x0, y0, x1, y1) ;
+    { if (PBWT::isCheck) printf ("x0 %.4f %.4f < x1 %.4f %.4f\n", x0, y0, x1, y1) ;
       x2 = x1 ; y2 = y1 ; x1 = x0 ; y1 = y0 ;
       x0 = 3*x1 - 2*x2 ; if (x0 < 0.5*x1) x0 = 0.5*x1 ;
       y0 = (*function)(x0) ; 
@@ -51,18 +51,18 @@ double lineSearchPositive (double xInit, double tol, double (*function)(double))
   while (x2/x0 > tol)
     { double x ; 	/* new test value */
       if ((x1 - x0) > 2*(x2 - x1))
-	{ x = 0.5*(x0 + x1) ; if (isCheck) printf ("split 01: ") ; }
+	{ x = 0.5*(x0 + x1) ; if (PBWT::isCheck) printf ("split 01: ") ; }
       else if ((x2 - x1) > 2*(x1 - x0))
-	{ x = 0.5*(x1 + x2) ; if (isCheck) printf ("split 12: ") ; }
+	{ x = 0.5*(x1 + x2) ; if (PBWT::isCheck) printf ("split 12: ") ; }
       else
 	{ double a = ((y2-y1)*(x1-x0) - (y1-y0)*(x2-x1))
 	    / ((x2*x2-x1*x1)*(x1-x0) - (x1*x1-x0*x0)*(x2-x1)) ;
 	  double b = 0.5 * (a * (x2*x2-x1*x1) - (y2-y1)) / (x2-x1) ;
 	  x = b/a ;
-	  if (isCheck) printf ("estimate: ") ;
+	  if (PBWT::isCheck) printf ("estimate: ") ;
 	}
       double y = (*function)(x) ;
-      if (isCheck) printf ("x/y0 %.4f %.4f  x/y1 %.4f %.4f x/y2 %.4f %.4f  x/ynew %.4f %.4f\n",
+      if (PBWT::isCheck) printf ("x/y0 %.4f %.4f  x/y1 %.4f %.4f x/y2 %.4f %.4f  x/ynew %.4f %.4f\n",
 			   x0, y0, x1, y1, x2, y2, x, y) ;
       if (x > x1)
 	if (y > y1) { x0 = x1 ; y0 = y1 ; x1 = x ; y1 = y ; }
@@ -78,7 +78,7 @@ double lineSearchPositive (double xInit, double tol, double (*function)(double))
 
 static void simpleEntropy (PBWT *p)
 {
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+	PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
   int i, j, d ;
   double LL = 0, f ;
   long dTotStick = 0, nTotStick = 0 ;
@@ -93,9 +93,9 @@ static void simpleEntropy (PBWT *p)
 	}
       f = u->c/(double)p->M ;
       if (f > 0 && f < 1) LL += f * log(f) + (1-f) * log(1-f) ;
-      pbwtCursorForwardsReadAD (u, i) ;
+      PBWT::pbwtCursorForwardsReadAD (u, i) ;
     }
-  pbwtCursorDestroy (u) ;
+  PBWT::pbwtCursorDestroy (u) ;
 
   printf ("Fraction switch %.4f  av dStick %.1f av dSwitch %.1f\n", 
 	  nTotSwitch / (double)(nTotStick+nTotSwitch),
@@ -117,7 +117,7 @@ static Array buildRowInfo (PBWT *p, int MAX) /* array of RowInfo */
 /* record how many times for each d we stick or switch going down the column */
 {
   Array info = arrayCreate (4096, RowInfo) ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
   int i, j ;
 
   for (i = 0 ; i < p->N ; ++i)
@@ -128,10 +128,10 @@ static Array buildRowInfo (PBWT *p, int MAX) /* array of RowInfo */
 	  else 
 	    ++arrayp(info,d,RowInfo)->nSwitch ;
 	}
-      pbwtCursorForwardsReadAD (u, i) ;
+	PBWT::pbwtCursorForwardsReadAD (u, i) ;
     }
 
-  if (isStats)
+  if (PBWT::isStats)
     { int totStick = 0, totSwitch = 0 ; int lastStick = 0, lastSwitch = 0 ;
       double lastF = 1.0 ;
       for (i = 0 ; i < arrayMax(info) ; ++i)
@@ -148,7 +148,7 @@ static Array buildRowInfo (PBWT *p, int MAX) /* array of RowInfo */
 	      totStick*100.0/(totStick+totSwitch), totSwitch*100.0/(totStick+totSwitch)) ;
     }
 
-  pbwtCursorDestroy (u) ;
+  PBWT::pbwtCursorDestroy (u) ;
 
   return info ;
 }
@@ -187,7 +187,7 @@ static Array buildRowInfoDropOne (PBWT *p, int MAX) /* array of RowInfoDropOne *
    as a function of the pair of d values between them, encoded as dd */
 {
   Array info = arrayCreate (4096, RowInfoDropOne) ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
   int i, j, k, d1, d2, dd ;
 
   for (i = 0 ; i < p->N ; ++i)
@@ -207,10 +207,10 @@ static Array buildRowInfoDropOne (PBWT *p, int MAX) /* array of RowInfoDropOne *
 	  arrayp(info,dd,RowInfoDropOne)->n[k] += 1 ; 
 	  arrp(info,dd,RowInfoDropOne)->nTot += 1 ;
 	}
-      pbwtCursorForwardsReadAD (u, i) ;
+	PBWT::pbwtCursorForwardsReadAD (u, i) ;
     }
 
-  if (isStats)
+  if (PBWT::isStats)
     { int kTot[8] ; for (k = 0 ; k < 8 ; ++k) kTot[k] = 0 ;
       for (dd = 0 ; dd < arrayMax(info) ; ++dd)
 	if (arrp(info,dd,RowInfoDropOne)->nTot)
@@ -223,7 +223,7 @@ static Array buildRowInfoDropOne (PBWT *p, int MAX) /* array of RowInfoDropOne *
 	      (kTot[2]+kTot[5])*100.0/tot) ;
     }
 
-  pbwtCursorDestroy (u) ;
+  PBWT::pbwtCursorDestroy (u) ;
 
   return info ;
 }
@@ -281,7 +281,7 @@ static Array buildRowInfoFreqDropOne (PBWT *p, int MAX) /* array of RowInfoDropO
    as a function of allele count */
 {
   Array info = arrayCreate (p->M, RowInfoDropOne) ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
   int i, j, k, n1 ;
 
   for (i = 0 ; i < p->N ; ++i)
@@ -297,10 +297,10 @@ static Array buildRowInfoFreqDropOne (PBWT *p, int MAX) /* array of RowInfoDropO
 	  arrayp(info,n1,RowInfoDropOne)->n[k] += 1 ; 
 	  arrp(info,n1,RowInfoDropOne)->nTot += 1 ;
 	}
-      pbwtCursorForwardsReadAD (u, i) ;
+	PBWT::pbwtCursorForwardsReadAD (u, i) ;
     }
 
-  pbwtCursorDestroy (u) ;
+  PBWT::pbwtCursorDestroy (u) ;
 
   pM = p->M ;
 
@@ -339,7 +339,7 @@ static double alphaSearchFreqDropOne (double alpha)
 
 /****************************************/
 
-void pbwtFitAlphaBeta (PBWT *p, int model)
+void PBWT::pbwtFitAlphaBeta (PBWT *p, int model)
 {
   double LL ;
   switch (model)
@@ -380,7 +380,7 @@ void pbwtFitAlphaBeta (PBWT *p, int model)
 double copyLogLikelihoodDropOne (PBWT *p, double theta, double rho)
 {
   int i, j, k ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
   double **left = myalloc (p->M, double*) ;
   double *logLeftSum = mycalloc (p->M, double) ;
   for (i = 0 ; i < p->M ; ++i) 
@@ -406,9 +406,9 @@ double copyLogLikelihoodDropOne (PBWT *p, double theta, double rho)
 	  for (j = 0 ; j < p->M ; ++j) if (j != i) left[i][j] /= sum ;
 	}
       /*      if (isCheck) printf ("done site %d\n", k) ; */
-      pbwtCursorForwardsRead (u) ;
+      PBWT::pbwtCursorForwardsRead (u) ;
     }
-  pbwtCursorDestroy (u) ;
+  PBWT::pbwtCursorDestroy (u) ;
 
   double LL = 0 ;
   for (i = 0 ; i < p->M ; ++i) LL += logLeftSum[i] ;
@@ -431,7 +431,7 @@ static double thetaSearchDropOne (double theta)
   return copyLogLikelihoodDropOne (pSearch, thetaSearch, rhoSearch) ; 
 }
 
-void pbwtLogLikelihoodCopyModel (PBWT *p, double theta, double rho)
+void PBWT::pbwtLogLikelihoodCopyModel (PBWT *p, double theta, double rho)
 { double LL = copyLogLikelihoodDropOne (p, theta, rho) ;
   printf ("theta %f rho %f LL %f  per site %f  per cell %f\n", 
 	  theta, rho, LL, LL/p->N, LL/(p->M*p->N)) ;

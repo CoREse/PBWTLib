@@ -28,7 +28,7 @@ static void readVcfSamples (PBWT *p, bcf_hdr_t *hr)
 
   p->samples = arrayCreate (p->M, int) ;
   for (i = 0 ; i < p->M/2 ; ++i)
-    { int k = sampleAdd (hr->samples[i],0,0,0) ;
+    { int k = PBWT::sampleAdd (hr->samples[i],0,0,0) ;
       array(p->samples, 2*i, int) = k ; /* assume diploid - could be cleverer */
       array(p->samples, 2*i+1, int) = k ;
     }
@@ -45,11 +45,11 @@ static int variation (PBWT *p, const char *ref, const char *alt)
       free (buf) ; buf = myalloc (buflen, char) ;
     }
   sprintf (buf, "%s\t%s", ref, alt) ;
-  dictAdd (variationDict, buf, &var) ;
+  dictAdd (PBWT::variationDict, buf, &var) ;
   return var ;
 }
 
-PBWT *pbwtReadVcfGT (char *filename)  /* read GTs from vcf/bcf using htslib */
+PBWT *PBWT::pbwtReadVcfGT (char *filename)  /* read GTs from vcf/bcf using htslib */
 {
   int i, j ;
 
@@ -171,7 +171,7 @@ PBWT *pbwtReadVcfGT (char *filename)  /* read GTs from vcf/bcf using htslib */
   return p ;
 }
 
-PBWT *pbwtReadVcfPL (char *filename)  /* read PLs from vcf/bcf using htslib */
+PBWT *PBWT::pbwtReadVcfPL (char *filename)  /* read PLs from vcf/bcf using htslib */
 {
   PBWT *p ;
   int i, j, k = 0 ;
@@ -234,7 +234,7 @@ static void pbwtSetContigs(bcf_hdr_t *hdr, faidx_t *fai)
     }
 }
 
-void pbwtWriteVcf (PBWT *p, char *filename, char *referenceFasta, char *mode)
+void PBWT::pbwtWriteVcf (PBWT *p, char *filename, char *referenceFasta, char *mode)
 {
   htsFile *fp = NULL ;
   bcf_hdr_t *bcfHeader = NULL ;

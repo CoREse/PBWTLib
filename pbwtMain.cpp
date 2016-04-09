@@ -31,12 +31,12 @@
 static PBWT *playGround (PBWT *p)
 {
   int k, j ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
   double *d = 0, sumDiff2 = 0 ;
 
   for (k = 0 ; k < p->N ; ++k)
     { double psum = 0, xsum = 0, pxsum = 0 ;
-      d = pbwtDosageRetrieve (p, u, d, k) ;
+      d = PBWT::pbwtDosageRetrieve (p, u, d, k) ;
       for (j = 0 ; j < p->M ; ++j)
 	{ psum += d[j] ;
 	  if (d[j]) { xsum++ ; pxsum += d[j] ; }
@@ -44,14 +44,14 @@ static PBWT *playGround (PBWT *p)
       psum /= p->M ; xsum /= p->M ; pxsum /= p->M ;
       double varProd = psum*(1.0-psum)*xsum*(1.0-xsum) ;
       double info = varProd ? (pxsum - psum*psum)/sqrt(varProd) : 1.0 ;
-      double diff = (info - arrp(p->sites,k,Site)->imputeInfo) ;
+      double diff = (info - arrp(p->sites,k,PBWT::Site)->imputeInfo) ;
       sumDiff2 += diff*diff ;
-      pbwtCursorForwardsRead (u) ;
+      PBWT::pbwtCursorForwardsRead (u) ;
     }
 
   printf ("RMS info to zInfo %.4f\n", sqrt (sumDiff2/p->N)) ;
 
-  pbwtCursorDestroy (u) ; free (d) ;
+  PBWT::pbwtCursorDestroy (u) ; free (d) ;
   return p ;
 }
 
@@ -60,11 +60,11 @@ static PBWT *playGround (PBWT *p)
 static void prettyPlot (PBWT *p, FILE *fp, int K)
 {
   int i, j ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
-  uchar **hap = pbwtHaplotypes (p) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
+  uchar **hap = PBWT::pbwtHaplotypes (p) ;
 
   for (i = 0 ; i < K ; ++i)
-    pbwtCursorForwardsRead (u) ;
+    PBWT::pbwtCursorForwardsRead (u) ;
 
   for (j = 0 ; j < p->M ; ++j)
     { for (i = K-100 ; i < K ; i++)
@@ -74,7 +74,7 @@ static void prettyPlot (PBWT *p, FILE *fp, int K)
 	putc (hap[u->a[j]][i++]?'1':'0', fp) ;
       putc ('\n',fp) ;
     }
-  pbwtCursorDestroy (u) ;
+  PBWT::pbwtCursorDestroy (u) ;
 }
 
 /*********************************************************/
@@ -83,7 +83,7 @@ static void exportSiteInfo (PBWT *p, FILE *fp, int f1, int f2)
 /* print out d[] and y[] for sites with f1 <= f < f2 */
 {
   int i, j, f, n = 0 ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
 
   for (i = 0 ; i < p->N ; ++i)
     { f = p->M - u->c ;		/* number of 1s not 0s */
@@ -93,10 +93,10 @@ static void exportSiteInfo (PBWT *p, FILE *fp, int f1, int f2)
 	  fprintf (fp, "\n") ;
 	  ++n ;
 	}
-      pbwtCursorForwardsReadAD (u, i) ;
+      PBWT::pbwtCursorForwardsReadAD (u, i) ;
     }
-  pbwtCursorDestroy (u) ;
-  fprintf (logFile, "%d rows exported with allele count f, %d <= f < %d\n", n, f1, f2) ;
+  PBWT::pbwtCursorDestroy (u) ;
+  fprintf (PBWT::logFile, "%d rows exported with allele count f, %d <= f < %d\n", n, f1, f2) ;
 }
 
 /************ AF distribution **************/
@@ -104,7 +104,7 @@ static void exportSiteInfo (PBWT *p, FILE *fp, int f1, int f2)
 static void siteFrequencySpectrum (PBWT *p)
 {
   int i, j, n ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
   Array hist = arrayCreate (p->M, int) ;
   int thresh[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9,
 		   10, 20, 30, 40, 50, 60, 70, 80, 90,
@@ -114,7 +114,7 @@ static void siteFrequencySpectrum (PBWT *p)
 		   100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000,
 		   1000000 } ;
 
-  timeUpdate(logFile) ;
+  timeUpdate(PBWT::logFile) ;
 
   FILE *fp ;
   if (p->sites) { fp = fopen ("sites.freq", "w") ; if (!fp) die ("can't open sites.freq") ; }
@@ -122,11 +122,11 @@ static void siteFrequencySpectrum (PBWT *p)
   for (i = 0 ; i < p->N ; ++i)
     { ++array(hist, p->M - u->c, int) ;
       if (p->sites)
-	{ Site *s = arrp(p->sites,i,Site) ;
+	{ PBWT::Site *s = arrp(p->sites,i,PBWT::Site) ;
 	  s->freq = 1.0 - (double)u->c/(double)p->M ;
-	  fprintf (fp, "%s\t%d\t%.6f\t%s\n", p->chrom, s->x, s->freq, dictName (variationDict, s->varD)) ;
+	  fprintf (fp, "%s\t%d\t%.6f\t%s\n", p->chrom, s->x, s->freq, dictName (PBWT::variationDict, s->varD)) ;
 	}
-      pbwtCursorForwardsRead (u) ;
+      PBWT::pbwtCursorForwardsRead (u) ;
     }
   if (p->sites) fclose (fp) ;
 
@@ -144,7 +144,7 @@ static void siteFrequencySpectrum (PBWT *p)
 
 /*********************************************************/
 
-char *commandLine = "" ;
+char *PBWT::commandLine = "" ;
 
 static void recordCommandLine (int argc, char *argv[])
  {
@@ -152,11 +152,11 @@ static void recordCommandLine (int argc, char *argv[])
 
    int i, len = 0 ;
    for (i = 0 ; i < argc ; ++i) len += (1 + strlen(argv[i])) ;
-   commandLine = myalloc (len, char) ;
-   strcpy (commandLine, argv[0]) ;
+   PBWT::commandLine = myalloc (len, char) ;
+   strcpy (PBWT::commandLine, argv[0]) ;
    for (i = 1 ; i < argc ; ++i) 
-     { strcat (commandLine, " ") ; 
-       strcat (commandLine, argv[i]) ;
+     { strcat (PBWT::commandLine, " ") ; 
+       strcat (PBWT::commandLine, argv[i]) ;
      }
  }
 
@@ -168,15 +168,15 @@ static void recordCommandLine (int argc, char *argv[])
 #define FCLOSE if (strcmp(argv[1], "-")) fclose(fp)
 #define LOPEN(name,mode)  if (!strcmp (argv[2], "-")) lp = !strcmp(mode,"r") ? stdin : stdout ; else if (!(lp = fopen (argv[2],mode))) die ("failed to open %s file", name, argv[2])
 #define LCLOSE if (strcmp(argv[2], "-")) fclose(lp)
-#define LOGOPEN(name) if (!strcmp (argv[1], "-")) logFile = stderr ; else if (!(logFile = fopen (argv[1],"w"))) die ("failed to open %s file %s", name, argv[1])
-#define LOGCLOSE if (logFile && !(logFile==stderr)) fclose(logFile)
+#define LOGOPEN(name) if (!strcmp (argv[1], "-")) PBWT::logFile = stderr ; else if (!(PBWT::logFile = fopen (argv[1],"w"))) die ("failed to open %s file %s", name, argv[1])
+#define LOGCLOSE if (PBWT::logFile && !(PBWT::logFile==stderr)) fclose(PBWT::logFile)
 
 const char *pbwtCommitHash(void)
 {
   return PBWT_COMMIT_HASH ;
 }
 
-FILE *logFile ; /* log file pointer */
+FILE *PBWT::logFile ; /* log file pointer */
 
 int main (int argc, char *argv[])
 {
@@ -186,9 +186,9 @@ int main (int argc, char *argv[])
   Array test ;
   char *referenceFasta = NULL;
 
-  logFile = stderr ;
+  PBWT::logFile = stderr ;
 
-  pbwtInit () ;
+  PBWT::pbwtInit () ;
 
   --argc ; ++argv ;
   recordCommandLine (argc, argv) ;
@@ -271,14 +271,14 @@ int main (int argc, char *argv[])
       fprintf (stderr, "  -4hapsStats               mu:rho 4 hap test stats\n") ;
     }
 
-  timeUpdate(logFile) ;
+  timeUpdate(PBWT::logFile) ;
   while (argc) {
     if (!(**argv == '-'))
       die ("not well formed command %s\nType pbwt without arguments for help", *argv) ;
     else if (!strcmp (argv[0], "-check"))
-      { isCheck = TRUE ; argc -= 1 ; argv += 1 ; }
-    else if (!strcmp (argv[0], "-stats"))
-      { isStats = TRUE ; argc -= 1 ; argv += 1 ; }
+    {p->isCheck = TRUE ; argc -= 1 ; argv += 1 ; }
+	    else if (!strcmp (argv[0], "-stats"))
+      { p->isStats = TRUE ; argc -= 1 ; argv += 1 ; }
     else if (!strcmp (argv[0], "-merge") && argc > 1)
     { 
         int i, nfiles = 0;
@@ -288,108 +288,108 @@ int main (int argc, char *argv[])
             if ( argv[i][0] == '-' ) break; // hopefully no one names their files to start with "-"
             files[nfiles++] = argv[i];
         }
-        if ( nfiles>1 ) p = pbwtMerge(files, nfiles); 
+        if ( nfiles>1 ) p = p->pbwtMerge(files, nfiles); 
         free(files);
         argc -= nfiles+1 ; argv += nfiles+1 ; 
     }
     else if (!strcmp (argv[0], "-log") && argc > 1)
       { LOGCLOSE ; LOGOPEN("log") ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-haps") && argc > 1)
-      { FOPEN("haps","w") ; pbwtWriteHaplotypes (fp, p) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("haps","w") ; p->pbwtWriteHaplotypes (fp, p) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-read") && argc > 1)
-      { if (p) pbwtDestroy (p) ; FOPEN("read","r") ; p = pbwtRead (fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { if (p) p->pbwtDestroy (p) ; FOPEN("read","r") ; p = p->pbwtRead (fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readSites") && argc > 1)
-      { FOPEN("readSites","r") ; pbwtReadSites (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("readSites","r") ; p->pbwtReadSites (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readSamples") && argc > 1)
-      { FOPEN("readSamples","r") ; pbwtReadSamples (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("readSamples","r") ; p->pbwtReadSamples (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readMissing") && argc > 1)
-      { FOPEN("readMissing","r") ; pbwtReadMissing (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("readMissing","r") ; p->pbwtReadMissing (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readDosage") && argc > 1)
-      { FOPEN("readMissing","r") ; pbwtReadDosage (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("readMissing","r") ; p->pbwtReadDosage (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readReverse") && argc > 1)
-      { FOPEN("readReverse","r") ; pbwtReadReverse (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("readReverse","r") ; p->pbwtReadReverse (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readAll") && argc > 1)
-      { p = pbwtReadAll (argv[1]) ; argc -= 2 ; argv += 2 ; }
+      { p = p->pbwtReadAll (argv[1]) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readVcfGT") && argc > 1)
-      { if (p) pbwtDestroy (p) ; p = pbwtReadVcfGT (argv[1]) ; argc -= 2 ; argv += 2 ; }
+      { if (p) p->pbwtDestroy (p) ; p = p->pbwtReadVcfGT (argv[1]) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readVcfPL") && argc > 1)
-      { if (p) pbwtDestroy (p) ; p = pbwtReadVcfPL (argv[1]) ; argc -= 2 ; argv += 2 ; }
+      { if (p) p->pbwtDestroy (p) ; p = p->pbwtReadVcfPL (argv[1]) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readMacs") && argc > 1)
-      { if (p) pbwtDestroy (p) ; FOPEN("readMacs","r") ; p = pbwtReadMacs (fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { if (p) p->pbwtDestroy (p) ; FOPEN("readMacs","r") ; p = p->pbwtReadMacs (fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readVcfq") && argc > 1)
-      { if (p) pbwtDestroy (p) ; FOPEN("readVcfq","r") ; p = pbwtReadVcfq (fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { if (p) p->pbwtDestroy (p) ; FOPEN("readVcfq","r") ; p = p->pbwtReadVcfq (fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-readGen") && argc > 2)
-      { if (p) pbwtDestroy (p) ; FOPEN("readGen","r") ; p = pbwtReadGen (fp, argv[2]) ; FCLOSE ; argc -= 3 ; argv += 3 ; }
+      { if (p) p->pbwtDestroy (p) ; FOPEN("readGen","r") ; p = p->pbwtReadGen (fp, argv[2]) ; FCLOSE ; argc -= 3 ; argv += 3 ; }
     else if (!strcmp (argv[0], "-readHap") && argc > 2)
-      { if (p) pbwtDestroy (p) ; FOPEN("readHap","r") ; p = pbwtReadHap (fp, argv[2]) ; FCLOSE ; argc -= 3 ; argv += 3 ; }
+      { if (p) p->pbwtDestroy (p) ; FOPEN("readHap","r") ; p = p->pbwtReadHap (fp, argv[2]) ; FCLOSE ; argc -= 3 ; argv += 3 ; }
     else if (!strcmp (argv[0], "-readHapLegend") && argc > 3)
-    { if (p) pbwtDestroy (p) ; FOPEN("readHap","r") ; LOPEN("readHap","r") ; p = pbwtReadHapLegend (fp, lp, argv[3]) ; FCLOSE ; LCLOSE ; argc -= 4 ; argv += 4 ; }
+    { if (p) p->pbwtDestroy (p) ; FOPEN("readHap","r") ; LOPEN("readHap","r") ; p = p->pbwtReadHapLegend (fp, lp, argv[3]) ; FCLOSE ; LCLOSE ; argc -= 4 ; argv += 4 ; }
     else if (!strcmp (argv[0], "-readPhase") && argc > 1)
-      { if (p) pbwtDestroy (p) ; FOPEN("readPhase","r") ; p = pbwtReadPhase (fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { if (p) p->pbwtDestroy (p) ; FOPEN("readPhase","r") ; p = p->pbwtReadPhase (fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-write") && argc > 1)
-      { FOPEN("write","w") ; pbwtWrite (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("write","w") ; p->pbwtWrite (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeSites") && argc > 1)
-      { FOPEN("writeSites","w") ; pbwtWriteSites (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("writeSites","w") ; p->pbwtWriteSites (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeSamples") && argc > 1)
-      { FOPEN("writeSamples","w") ; pbwtWriteSamples (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("writeSamples","w") ; p->pbwtWriteSamples (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeMissing") && argc > 1)
-      { FOPEN("writeMissing","w") ; pbwtWriteMissing (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("writeMissing","w") ; p->pbwtWriteMissing (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeDosage") && argc > 1)
-      { FOPEN("writeMissing","w") ; pbwtWriteDosage (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("writeMissing","w") ; p->pbwtWriteDosage (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeReverse") && argc > 1)
-      { FOPEN("writeReverse","w") ; pbwtWriteReverse (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("writeReverse","w") ; p->pbwtWriteReverse (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeAll") && argc > 1)
-      { pbwtWriteAll (p, argv[1]) ; argc -= 2 ; argv += 2 ; }
+      { p->pbwtWriteAll (p, argv[1]) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeImputeRef") && argc > 1)
-      { pbwtWriteImputeRef (p, argv[1]) ; argc -= 2 ; argv += 2 ; }
+      { p->pbwtWriteImputeRef (p, argv[1]) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeImputeHapsG") && argc > 1)
-      { FOPEN("writeImputeHaps","w") ; pbwtWriteImputeHapsG (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("writeImputeHaps","w") ; p->pbwtWriteImputeHapsG (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeGen") && argc > 1)
-      { FOPEN("writeGen","w") ; pbwtWriteGen (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("writeGen","w") ; p->pbwtWriteGen (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writePhase") && argc > 1)
-      { pbwtWritePhase (p,argv[1]) ; argc -= 2 ; argv += 2 ; }
+      { p->pbwtWritePhase (p,argv[1]) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeTransposedHaplotypes") && argc > 1)
-      { FOPEN("writeTransposedHaplotypes",argv[0]) ; pbwtWriteTransposedHaplotypes (p, fp) ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("writeTransposedHaplotypes",argv[0]) ; p->pbwtWriteTransposedHaplotypes (p, fp) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-referenceFasta") && argc > 1)
       { referenceFasta = strdup(argv[1]) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeVcf") && argc > 1)
-      { pbwtWriteVcf (p, argv[1], referenceFasta, "w") ; argc -= 2 ; argv += 2 ; }
+      { p->pbwtWriteVcf (p, argv[1], referenceFasta, "w") ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeVcfGz") && argc > 1)
-      { pbwtWriteVcf (p, argv[1], referenceFasta, "wz") ; argc -= 2 ; argv += 2 ; }
+      { p->pbwtWriteVcf (p, argv[1], referenceFasta, "wz") ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeBcf") && argc > 1)
-      { pbwtWriteVcf (p, argv[1], referenceFasta, "wbu") ; argc -= 2 ; argv += 2 ; }
+      { p->pbwtWriteVcf (p, argv[1], referenceFasta, "wbu") ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-writeBcfGz") && argc > 1)
-      { pbwtWriteVcf (p, argv[1], referenceFasta, "wb") ; argc -= 2 ; argv += 2 ; }
+      { p->pbwtWriteVcf (p, argv[1], referenceFasta, "wb") ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-checkpoint") && argc > 1)
-      { nCheckPoint = atoi (argv[1]) ; argc -= 2 ; argv += 2 ; }
+      { p->nCheckPoint = atoi (argv[1]) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-subsample") && argc > 2)
-      { p = pbwtSubSampleInterval (p, atoi(argv[1]), atoi(argv[2])) ; argc -= 3 ; argv += 3 ; }
+      { p = p->pbwtSubSampleInterval (p, atoi(argv[1]), atoi(argv[2])) ; argc -= 3 ; argv += 3 ; }
     else if (!strcmp (argv[0], "-selectSamples") && argc > 2)
-      { FOPEN("selectSamples","r") ; p = pbwtSelectSamples (p, fp) ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("selectSamples","r") ; p = p->pbwtSelectSamples (p, fp) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-subsites") && argc > 2)
-      { p = pbwtSubSites (p, atof(argv[1]), atof(argv[2])) ; argc -= 3 ; argv += 3 ; }
+      { p = p->pbwtSubSites (p, atof(argv[1]), atof(argv[2])) ; argc -= 3 ; argv += 3 ; }
     else if (!strcmp (argv[0], "-selectSites") && argc > 1)
-      { FOPEN("selectSites","r") ; char *chr = 0 ; Array sites = pbwtReadSitesFile (fp, &chr) ;
+      { FOPEN("selectSites","r") ; char *chr = 0 ; Array sites = p->pbwtReadSitesFile (fp, &chr) ;
 	if (strcmp (chr, p->chrom)) die ("chromosome mismatch in selectSites") ;
-	p = pbwtSelectSites (p, sites, FALSE) ; free (chr) ; arrayDestroy (sites) ;
+	p = p->pbwtSelectSites (p, sites, FALSE) ; free (chr) ; arrayDestroy (sites) ;
 	argc -= 2 ; argv += 2 ; 
       }
     else if (!strcmp (argv[0], "-removeSites") && argc > 1)
-      { FOPEN("removeSites","r") ; char *chr = 0 ; Array sites = pbwtReadSitesFile (fp, &chr) ;
+      { FOPEN("removeSites","r") ; char *chr = 0 ; Array sites = p->pbwtReadSitesFile (fp, &chr) ;
 	if (p->chrom && strcmp (chr, p->chrom)) die ("chromosome mismatch in removeSites") ;
-	p = pbwtRemoveSites (p, sites, FALSE) ; free (chr) ; arrayDestroy (sites) ;
+	p = p->pbwtRemoveSites (p, sites, FALSE) ; free (chr) ; arrayDestroy (sites) ;
 	argc -= 2 ; argv += 2 ; 
       }
     else if (!strcmp (argv[0], "-subrange") && argc > 2)
-      { p = pbwtSubRange (p, atoi(argv[1]), atoi(argv[2])) ; argc -= 3 ; argv += 3 ; }
+      { p = p->pbwtSubRange (p, atoi(argv[1]), atoi(argv[2])) ; argc -= 3 ; argv += 3 ; }
     else if (!strcmp (argv[0], "-corruptSites") && argc > 2)
-      { p = pbwtCorruptSites (p, atof(argv[1]), atof(argv[2])) ; argc -= 3 ; argv += 3 ; }
+      { p = p->pbwtCorruptSites (p, atof(argv[1]), atof(argv[2])) ; argc -= 3 ; argv += 3 ; }
     else if (!strcmp (argv[0], "-corruptSamples") && argc > 2)
-      { p = pbwtCorruptSamples (p, atof(argv[1]), atof(argv[2])) ; argc -= 3 ; argv += 3 ; }
+      { p = p->pbwtCorruptSamples (p, atof(argv[1]), atof(argv[2])) ; argc -= 3 ; argv += 3 ; }
     else if (!strcmp (argv[0], "-copySamples") && argc > 2)
-      { p = pbwtCopySamples (p, atoi(argv[1]), atof(argv[2])) ; argc -= 3 ; argv += 3 ; }
+      { p = p->pbwtCopySamples (p, atoi(argv[1]), atof(argv[2])) ; argc -= 3 ; argv += 3 ; }
     else if (!strcmp (argv[0], "-buildReverse"))
-      { pbwtBuildReverse (p) ; argc -= 1 ; argv += 1 ; }
+      { p->pbwtBuildReverse (p) ; argc -= 1 ; argv += 1 ; }
     else if (!strcmp (argv[0], "-pretty") && argc > 2)
       { FOPEN("prettyPlot","w") ; prettyPlot (p, fp, atoi(argv[2])) ; FCLOSE ; argc -= 3 ; argv += 3 ; }
     else if (!strcmp (argv[0], "-siteInfo") && argc > 3)
@@ -397,23 +397,23 @@ int main (int argc, char *argv[])
     else if (!strcmp (argv[0], "-sfs"))
       { siteFrequencySpectrum (p) ; argc -= 1 ; argv += 1 ; }
     else if (!strcmp (argv[0], "-refFreq") && argc > 1)
-      { FOPEN("refFreq","r") ; pbwtReadRefFreq (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("refFreq","r") ; p->pbwtReadRefFreq (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-maxWithin"))
-      { pbwtLongMatches (p, 0) ; argc -= 1 ; argv += 1 ; }
+      { p->pbwtLongMatches (p, 0) ; argc -= 1 ; argv += 1 ; }
     else if (!strcmp (argv[0], "-longWithin") && argc > 1)
-      { pbwtLongMatches (p, atoi(argv[1])) ; argc -= 2 ; argv += 2 ; }
+      { p->pbwtLongMatches (p, atoi(argv[1])) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-matchNaive") && argc > 1)
-      { FOPEN("matchNaive","r") ; matchSequencesNaive (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("matchNaive","r") ; p->matchSequencesNaive (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-matchIndexed") && argc > 1)
-      { FOPEN("matchIndexed","r") ; matchSequencesIndexed (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("matchIndexed","r") ; p->matchSequencesIndexed (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-matchDynamic") && argc > 1)
-      { FOPEN("matchDynamic","r") ; matchSequencesDynamic (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      { FOPEN("matchDynamic","r") ; p->matchSequencesDynamic (p, fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-imputeExplore") && argc > 1)
-      { imputeExplore (p, atoi(argv[1])) ; argc -= 2 ; argv += 2 ; }
+      { p->imputeExplore (p, atoi(argv[1])) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-phase") && argc > 1)
-      { p = phase (p, atoi(argv[1])) ; argc -= 2 ; argv += 2 ; }
+      { p = p->phase (p, atoi(argv[1])) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-referencePhase") && argc > 1)
-      { p = referencePhase (p, argv[1]) ; argc -= 2 ; argv += 2 ; }
+      { p = p->referencePhase (p, argv[1]) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-referenceImpute") && argc > 1)
       { int nSparse = 1 ; double fSparse = 1.0 ;
 	char *fileNameRoot = argv[1] ;  argc -= 2 ; argv += 2 ; 
@@ -425,45 +425,45 @@ int main (int argc, char *argv[])
 	  { if (!(fSparse = atof(argv[0]))) die ("bad refImpute fSparse %s", argv[0]) ;
 	    else { --argc ; ++argv ; }
 	  }
-	p = referenceImpute (p, fileNameRoot, nSparse, fSparse) ;
+	p = p->referenceImpute (p, fileNameRoot, nSparse, fSparse) ;
       }
     else if (!strcmp (argv[0], "-genotypeCompare") && argc > 1)
-      { genotypeCompare (p, argv[1]) ; argc -= 2 ; argv += 2 ; }
+      { p->genotypeCompare (p, argv[1]) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-imputeMissing"))
-      { p = imputeMissing (p) ; argc -= 1 ; argv += 1 ; }
+      { p = p->imputeMissing (p) ; argc -= 1 ; argv += 1 ; }
     else if (!strcmp (argv[0], "-fitAlphaBeta") && argc > 1)
-      { pbwtFitAlphaBeta (p, atoi(argv[1])) ; argc -= 2 ; argv += 2 ; }
+      { p->pbwtFitAlphaBeta (p, atoi(argv[1])) ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-llCopyModel") && argc > 2)
-      { pbwtLogLikelihoodCopyModel (p, atof(argv[1]), atof(argv[2])) ; 
+      { p->pbwtLogLikelihoodCopyModel (p, atof(argv[1]), atof(argv[2])) ; 
 	argc -= 3 ; argv += 3 ; 
       }
     else if (!strcmp (argv[0], "-readGeneticMap") && argc > 1)
-      {  FOPEN("readGeneticMap","r") ; readGeneticMap (fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
+      {  FOPEN("readGeneticMap","r") ; p->readGeneticMap (fp) ; FCLOSE ; argc -= 2 ; argv += 2 ; }
     else if (!strcmp (argv[0], "-4hapsStats"))
-      { pbwt4hapsStats (p) ; argc -= 1 ; argv += 1 ; }
+      { p->pbwt4hapsStats (p) ; argc -= 1 ; argv += 1 ; }
     else if (!strcmp (argv[0], "-paint") && argc > 1)
       { 
 	int npr=100;
        	if(argc>2) if(argv[2][0] !='-') npr=atoi(argv[2]);
-	paintAncestryMatrix (p, argv[1],npr) ; argc -= 2 ; argv += 2 ; 
+	p->paintAncestryMatrix (p, argv[1],npr) ; argc -= 2 ; argv += 2 ; 
        	if(argc>0) if(argv[0][0] !='-') {--argc;++argv; }
       }
     else if (!strcmp (argv[0], "-paintSparse") && argc > 1)
       { 
 	int npr=100;
        	if(argc>2) if(argv[2][0] !='-') npr=atoi(argv[2]);
-	paintAncestryMatrixSparse (p, argv[1],npr,0) ; argc -= 2 ; argv += 2 ; 
+	p->paintAncestryMatrixSparse (p, argv[1],npr,0) ; argc -= 2 ; argv += 2 ; 
        	if(argc>0) if(argv[0][0] !='-') {--argc;++argv; }
       }
     else if (!strcmp (argv[0], "-play"))
       { p = playGround (p) ; argc -= 1 ; argv += 1 ; }
     else
       die ("unrecognised command %s\nType pbwt without arguments for help", *argv) ;
-    timeUpdate(logFile) ;
+    timeUpdate(PBWT::logFile) ;
   }
-  if (p) pbwtDestroy(p) ;
-  if (variationDict) dictDestroy(variationDict);
-  sampleDestroy();
+  if (p) p->pbwtDestroy(p) ;
+  if (p->variationDict) dictDestroy(p->variationDict);
+  p->sampleDestroy();
   fgetword (NULL) ;	// to keep valgrind happy, free malloced memory
   LOGCLOSE ;
   return 0 ;

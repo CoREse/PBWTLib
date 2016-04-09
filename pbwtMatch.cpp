@@ -52,7 +52,7 @@ static void reportMatch (int ai, int bi, int start, int end)
           ai, bi, start, end, end - start) ;
   */
 
-  if (isCheck)			/* check match is a real match and maximal */
+  if (PBWT::isCheck)			/* check match is a real match and maximal */
     checkMatchMaximal (checkHapsA[ai], checkHapsB[bi], start, end, Ncheck) ;
 }
 
@@ -62,7 +62,7 @@ static void matchLongWithin1 (PBWT *p, int T,
 {
   int *a = myalloc (p->M, int), *b = myalloc (p->M, int) ;
   int i, ia, ib, na = 0, nb = 0, k ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
 
   for (k = 0 ; k <= p->N ; ++k)
     for (i = 0 ; i < u->M ; ++i)
@@ -78,7 +78,7 @@ static void matchLongWithin1 (PBWT *p, int T,
 	  b[nb++] = u->a[i] ;
       }
   
-  free(a) ; free(b) ;  pbwtCursorDestroy (u) ;
+  free(a) ; free(b) ;  PBWT::pbwtCursorDestroy (u) ;
 }
 
 static void matchLongWithin2 (PBWT *p, int T, 
@@ -86,7 +86,7 @@ static void matchLongWithin2 (PBWT *p, int T,
 /* alternative giving start - it turns out in tests that this is also faster, so use it */
 {
   int i, i0 = 0, ia, ib, na = 0, nb = 0, dmin, k ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
 
   for (k = 0 ; k <= p->N ; ++k)
     { for (i = 0 ; i < u->M ; ++i)
@@ -105,17 +105,17 @@ static void matchLongWithin2 (PBWT *p, int T,
 	  else
 	    nb++ ;
 	}
-      pbwtCursorForwardsReadAD (u, k) ;
+	PBWT::pbwtCursorForwardsReadAD (u, k) ;
     }
 
-  pbwtCursorDestroy (u) ;
+  PBWT::pbwtCursorDestroy (u) ;
 }
 
-void matchMaximalWithin (PBWT *p, void (*report)(int ai, int bi, int start, int end))
+void PBWT::matchMaximalWithin (PBWT *p, void (*report)(int ai, int bi, int start, int end))
 /* algorithm 4 in paper */
 {
   int i, j, k, m, n ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
 
   for (k = 0 ; k <= p->N ; ++k)
     { for (i = 0 ; i < u->M ; ++i)
@@ -134,17 +134,17 @@ void matchMaximalWithin (PBWT *p, void (*report)(int ai, int bi, int start, int 
 	    }
 	nexti: ;
 	}
-      pbwtCursorForwardsReadAD (u, k) ;
+	PBWT::pbwtCursorForwardsReadAD (u, k) ;
     }
 
-  pbwtCursorDestroy (u) ;
+  PBWT::pbwtCursorDestroy (u) ;
 }
 
 /* I think there is a good alternative, where I just go down through the list, keeping
    track of some things, but it is not worked out yet, let alone implemented.
 */
 
-void pbwtLongMatches (PBWT *p, int L) /* reporting threshold L - if 0 then maximal */
+void PBWT::pbwtLongMatches (PBWT *p, int L) /* reporting threshold L - if 0 then maximal */
 {
   int k ;
   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
@@ -190,7 +190,7 @@ void pbwtLongMatches (PBWT *p, int L) /* reporting threshold L - if 0 then maxim
    (the lowest reference index value).
 */
 
-void matchSequencesNaive (PBWT *p, FILE *fp) /* fp is a pbwt file of sequences to match */
+void PBWT::matchSequencesNaive (PBWT *p, FILE *fp) /* fp is a pbwt file of sequences to match */
 {
   PBWT *q = pbwtRead (fp) ;	/* q for "query" of course */
   uchar **query = pbwtHaplotypes (q) ; /* make the query sequences */
@@ -251,7 +251,7 @@ void matchSequencesNaive (PBWT *p, FILE *fp) /* fp is a pbwt file of sequences t
    13NM bytes for now I think.  This can almost certainly be reduced with some work.
 */
 
-void matchSequencesIndexed (PBWT *p, FILE *fp)
+void PBWT::matchSequencesIndexed (PBWT *p, FILE *fp)
 {
   PBWT *q = pbwtRead (fp) ;	/* q for "query" of course */
   uchar **query = pbwtHaplotypes (q) ; /* make the query sequences */
@@ -348,7 +348,7 @@ typedef struct {
   int e, f, g ;			/* start of match, PBWT interval */
 } MatchInfo ;
 
-void matchSequencesDynamic (PBWT *p, FILE *fp)
+void PBWT::matchSequencesDynamic (PBWT *p, FILE *fp)
 {
   PBWT *q = pbwtRead (fp) ;	/* q for "query" of course */
   matchSequencesSweep (p, q, reportMatch) ;
@@ -359,7 +359,7 @@ void matchSequencesDynamic (PBWT *p, FILE *fp)
    Just keep track of best match with its start. When it ends report and update.
 */
 
-void matchSequencesSweep (PBWT *p, PBWT *q, void (*report)(int ai, int bi, int start, int end))
+void PBWT::matchSequencesSweep (PBWT *p, PBWT *q, void (*report)(int ai, int bi, int start, int end))
 {
   if (q->N != p->N) die ("query length in matchSequences %d != PBWT length %d", q->N, p->N) ;
   PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
@@ -448,7 +448,7 @@ static int nSparseStore ;
 static void (*sweepSparseReport)(int ai, int bi, int start, int end, BOOL isSparse) ;
 static long totLen, nTot ;
 
-static void reportAndUpdate (int j, int k, uchar x, PbwtCursor *up, int *f, int *d, BOOL isSparse)
+static void reportAndUpdate (int j, int k, uchar x, PBWT::PbwtCursor *up, int *f, int *d, BOOL isSparse)
 /* problem that sparse arrays are only progressing at half the rate so k is too big */
 {
   /* first see if there is any match of the same length that can be extended */
@@ -460,7 +460,7 @@ static void reportAndUpdate (int j, int k, uchar x, PbwtCursor *up, int *f, int 
   int i ; for (i = f[j] ; i < iPlus ; ++i) (*sweepSparseReport) (j, up->a[i], dj, k, isSparse) ;
   nTot += (iPlus - f[j]) ; totLen += (k - dj)*(iPlus - f[j]) ;
 
-  if (isCheck && isSparse)	/* local sparse version of checkMatchMaximal() */
+  if (PBWT::isCheck && isSparse)	/* local sparse version of checkMatchMaximal() */
     for (i = f[j] ; i < iPlus ; ++i) 
       { uchar *x = checkHapsA[j], *y = checkHapsB[up->a[i]] ;
 	if (dj >= nSparseStore && x[dj-nSparseStore] == y[dj-nSparseStore])
@@ -490,14 +490,14 @@ static void reportAndUpdate (int j, int k, uchar x, PbwtCursor *up, int *f, int 
 	  else ++iPlus ;
 	dPlus = (iPlus < up->M) ? up->d[iPlus] : (isSparse ? k/nSparseStore : k) ;
 	if (!iMinus && iPlus == up->M) 
-	  { fprintf (logFile, "no match to query %d value %d at site %d\n", j, x, k) ;
+	  { fprintf (PBWT::logFile, "no match to query %d value %d at site %d\n", j, x, k) ;
 	    d[j] = 1 + (isSparse ? k/nSparseStore : k) ;
 	    return ; 
 	  }
       }
 }
 
-void matchSequencesSweepSparse (PBWT *p, PBWT *q, int nSparse,
+void PBWT::matchSequencesSweepSparse (PBWT *p, PBWT *q, int nSparse,
 	   void (*report)(int ai, int bi, int start, int end, BOOL isSparse))
 {
   nSparseStore = nSparse ;

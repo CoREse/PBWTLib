@@ -23,22 +23,23 @@
 
 #include "pbwt.h"
 
-BOOL isCheck = FALSE ;
-BOOL isStats = FALSE ;
-DICT *variationDict ;	/* "xxx|yyy" where variation is from xxx to yyy in VCF */
+BOOL PBWT::isCheck = FALSE ;
+BOOL PBWT::isStats = FALSE ;
+DICT *PBWT::variationDict ;	/* "xxx|yyy" where variation is from xxx to yyy in VCF */
+Array PBWT::samples;
 
 static void pack3init (void) ;	/* forward declaration */
 
 /************** core pbwt options *********************/
 
-void pbwtInit (void) 
+void PBWT::pbwtInit (void) 
 {
   variationDict = dictCreate (32) ;
   pack3init () ; 
   sampleInit () ;
 }
 
-PBWT *pbwtCreate (int M, int N)
+PBWT * PBWT::pbwtCreate (int M, int N)
 {
   PBWT *p = mycalloc (1, PBWT) ; /* cleared so elements default to 0 */
 
@@ -48,7 +49,7 @@ PBWT *pbwtCreate (int M, int N)
   return p ;
 }
 
-void pbwtDestroy (PBWT *p)
+void PBWT::pbwtDestroy (PBWT *p)
 {
   if (p->chrom) free (p->chrom) ;
   if (p->sites) arrayDestroy (p->sites) ;
@@ -68,7 +69,7 @@ void pbwtDestroy (PBWT *p)
 
 /*************** subsites, subrange etc. **************/
 
-PBWT *pbwtSubSites (PBWT *pOld, double fmin, double frac)
+PBWT *PBWT::pbwtSubSites (PBWT *pOld, double fmin, double frac)
 {
   int M = pOld->M ;
   PBWT *pNew = pbwtCreate (M, 0) ;
@@ -109,7 +110,7 @@ PBWT *pbwtSubSites (PBWT *pOld, double fmin, double frac)
   return pNew ;
 }
 
-PBWT *pbwtSubRange (PBWT *pOld, int start, int end)
+PBWT *PBWT::pbwtSubRange (PBWT *pOld, int start, int end)
 {
   int M = pOld->M ;
   PBWT *pNew = pbwtCreate (M, 0) ;
@@ -148,7 +149,7 @@ PBWT *pbwtSubRange (PBWT *pOld, int start, int end)
 
 /***** reverse PBWT - used for local matching to new sequences, and phasing/imputation *****/
 
-void pbwtBuildReverse (PBWT *p)
+void PBWT::pbwtBuildReverse (PBWT *p)
 {
   int i, j, M = p->M ;
   uchar *x = myalloc (M, uchar) ;
@@ -192,7 +193,7 @@ void pbwtBuildReverse (PBWT *p)
 
 /*************** make haplotypes ******************/
 
-uchar **pbwtHaplotypes (PBWT *p)	/* NB haplotypes can be space costly */
+uchar **PBWT::pbwtHaplotypes (PBWT *p)	/* NB haplotypes can be space costly */
 {
   int M = p->M ;
   int i, j, n = 0 ;
@@ -251,7 +252,7 @@ static inline int pack3Add (uchar yy, uchar *yzp, int n)
   return yzp - yzp0 ;
 }
 
-int pack3 (uchar *yp, int M, uchar *yzp) 
+int PBWT::pack3 (uchar *yp, int M, uchar *yzp) 
 /* pack M chars from y into yz - return number of chars added */
 { 
   int m = 0, m0 ;
@@ -266,7 +267,7 @@ int pack3 (uchar *yp, int M, uchar *yzp)
   return yzp - yzp0 ;
 }
 
-int pack3arrayAdd (uchar *yp, int M, Array ayz)
+int PBWT::pack3arrayAdd (uchar *yp, int M, Array ayz)
 /* pack M chars onto the end of array ayz - normally use this function */
 {
   long max = arrayMax(ayz) ;
@@ -276,7 +277,7 @@ int pack3arrayAdd (uchar *yp, int M, Array ayz)
   return n ;
 }
 
-int unpack3 (uchar *yzp, int M, uchar *yp, int *n0) 
+int PBWT::unpack3 (uchar *yzp, int M, uchar *yp, int *n0) 
 /* unpack yz into M chars in y - return number of chars unpacked - n0 is number of 0s */
 {
   int m = 0 ;
@@ -304,7 +305,7 @@ int unpack3 (uchar *yzp, int M, uchar *yp, int *n0)
   return yzp - yzp0 ;
 }
 
-int packCountReverse (uchar *yzp, int M) /* return number of bytes to reverse 1 position */
+int PBWT::packCountReverse (uchar *yzp, int M) /* return number of bytes to reverse 1 position */
 { 
   int m = 0 ;
   uchar *yzp0 = yzp ;
@@ -317,7 +318,7 @@ int packCountReverse (uchar *yzp, int M) /* return number of bytes to reverse 1 
 
 #define EATBYTE z = *yzp++ ; n = p3decode[z & 0x7f] ; m += n ; z >>= 7 ; nc[z] += n
 
-int extendMatchForwards (uchar *yzp, int M, uchar x, int *f, int *g)    
+int PBWT::extendMatchForwards (uchar *yzp, int M, uchar x, int *f, int *g)    
 		/* x is value to match, [f,g) are start, end of interval */
 /* update *f and *g to new match interval, return number of bytes used from yzp */
 /* this is more or less standard FM extension, counting nc (=ACC) on fly from BWT */
@@ -399,7 +400,7 @@ int extendPackedBackwards (uchar *yzp, int M, int *f, int c, uchar *zp)
 /************ block extension algorithms, updating whole arrays ************/
 /* we could do these also on the packed array with memcpy */
 
-PbwtCursor *pbwtNakedCursorCreate (int M, int *aInit) 
+PBWT::PbwtCursor *PBWT::pbwtNakedCursorCreate (int M, int *aInit) 
 {
   PbwtCursor *u = mycalloc (1, PbwtCursor) ;
   int i ; 
@@ -417,7 +418,7 @@ PbwtCursor *pbwtNakedCursorCreate (int M, int *aInit)
   return u ;
 }
 
-PbwtCursor *pbwtCursorCreate (PBWT *p, BOOL isForwards, BOOL isStart)
+PBWT::PbwtCursor *PBWT::pbwtCursorCreate (PBWT *p, BOOL isForwards, BOOL isStart)
 {
   if (isForwards && !p->yz) p->yz = arrayCreate (1<<20, uchar) ;
   if (!isForwards && !p->zz) p->zz = arrayCreate (1<<20, uchar) ;
@@ -444,7 +445,7 @@ PbwtCursor *pbwtCursorCreate (PBWT *p, BOOL isForwards, BOOL isStart)
   return u ;
 }
 
-void pbwtCursorDestroy (PbwtCursor *u)
+void PBWT::pbwtCursorDestroy (PbwtCursor *u)
 {
   free (u->y) ;
   free (u->a) ;
@@ -455,7 +456,7 @@ void pbwtCursorDestroy (PbwtCursor *u)
   free (u) ;
 }
 
-void pbwtCursorForwardsA (PbwtCursor *x) /* algorithm 1 in the manuscript */
+void PBWT::pbwtCursorForwardsA (PbwtCursor *x) /* algorithm 1 in the manuscript */
 {
   int u = 0, v = 0 ;
   int i ;
@@ -469,7 +470,7 @@ void pbwtCursorForwardsA (PbwtCursor *x) /* algorithm 1 in the manuscript */
   memcpy (x->a+u, x->b, v*sizeof(int)) ;
 }
 
-void pbwtCursorBackwardsA (PbwtCursor *x) /* undo algorithm 1 */
+void PBWT::pbwtCursorBackwardsA (PbwtCursor *x) /* undo algorithm 1 */
 {
   int u = 0, v = 0 ;
   int i ;
@@ -482,7 +483,7 @@ void pbwtCursorBackwardsA (PbwtCursor *x) /* undo algorithm 1 */
       x->a[i] = x->b[x->c + v++] ;
 }
 
-void pbwtCursorForwardsAD (PbwtCursor *x, int k) /* algorithm 2 in the manuscript */
+void PBWT::pbwtCursorForwardsAD (PbwtCursor *x, int k) /* algorithm 2 in the manuscript */
 {
   int u = 0, v = 0 ;
   int i ;
@@ -507,7 +508,7 @@ void pbwtCursorForwardsAD (PbwtCursor *x, int k) /* algorithm 2 in the manuscrip
   memcpy (x->d+u, x->e, v*sizeof(int)) ; x->d[0] = k+2 ; x->d[x->M] = k+2 ; /* sentinels */
 }
 
-void pbwtCursorCalculateU (PbwtCursor *x)
+void PBWT::pbwtCursorCalculateU (PbwtCursor *x)
 {
   int i, u = 0 ;
     
@@ -524,7 +525,7 @@ void pbwtCursorCalculateU (PbwtCursor *x)
    Also when writing it is at the start of the next block, because we don't yet have the contents.
 */
 
-void pbwtCursorForwardsRead (PbwtCursor *u) /* move forwards and read (unless at end) */
+void PBWT::pbwtCursorForwardsRead (PbwtCursor *u) /* move forwards and read (unless at end) */
 {
   pbwtCursorForwardsAPacked (u) ;
   if (!u->isBlockEnd && u->n < arrayMax(u->z))  /* move to end of previous block */
@@ -540,7 +541,7 @@ void pbwtCursorForwardsRead (PbwtCursor *u) /* move forwards and read (unless at
     u->isBlockEnd = FALSE ;	/* couldn't read in block and go to end */
 }
 
-void pbwtCursorForwardsReadAD (PbwtCursor *u, int k) /* AD version of the above */
+void PBWT::pbwtCursorForwardsReadAD (PbwtCursor *u, int k) /* AD version of the above */
 {
   pbwtCursorForwardsAD (u, k) ;
   if (!u->isBlockEnd && u->n < arrayMax(u->z))  /* move to end of previous block */
@@ -556,7 +557,7 @@ void pbwtCursorForwardsReadAD (PbwtCursor *u, int k) /* AD version of the above 
     u->isBlockEnd = FALSE ;	/* couldn't read in block and go to end */
 }
 
-void pbwtCursorReadBackwards (PbwtCursor *u) /* read and go backwards (unless at start) */
+void PBWT::pbwtCursorReadBackwards (PbwtCursor *u) /* read and go backwards (unless at start) */
 {
   if (u->isBlockEnd && u->n) u->n -= packCountReverse (arrp(u->z,u->n,uchar), u->M) ;
   if (u->n)
@@ -570,21 +571,21 @@ void pbwtCursorReadBackwards (PbwtCursor *u) /* read and go backwards (unless at
     u->isBlockEnd = TRUE ;
 }
 
-void pbwtCursorWriteForwards (PbwtCursor *u) /* write then move forwards */
+void PBWT::pbwtCursorWriteForwards (PbwtCursor *u) /* write then move forwards */
 {
   u->n += pack3arrayAdd (u->y, u->M, u->z) ;
   u->isBlockEnd = FALSE ;
   pbwtCursorForwardsA (u) ;
 }
 
-void pbwtCursorWriteForwardsAD (PbwtCursor *u, int k)
+void PBWT::pbwtCursorWriteForwardsAD (PbwtCursor *u, int k)
 {
   u->n += pack3arrayAdd (u->y, u->M, u->z) ;
   u->isBlockEnd = FALSE ;
   pbwtCursorForwardsAD (u, k) ;
 }
 
-void pbwtCursorToAFend (PbwtCursor *u, PBWT *p) /* utility to copy final u->a to p->aFend */
+void PBWT::pbwtCursorToAFend (PbwtCursor *u, PBWT *p) /* utility to copy final u->a to p->aFend */
 {
   if (!p->aFend) p->aFend = myalloc (p->M, int) ; 
   memcpy (p->aFend, u->a, p->M*sizeof(int)) ;
@@ -592,7 +593,7 @@ void pbwtCursorToAFend (PbwtCursor *u, PBWT *p) /* utility to copy final u->a to
 
 /***************************************************/
 
-void pbwtCursorForwardsAPacked (PbwtCursor *u)
+void PBWT::pbwtCursorForwardsAPacked (PbwtCursor *u)
 /* A replacement for pbwtCursorForwardsA()
    We need u->nBlockStart = start of the packed array corresponding to current y,
    then copy blocks of old a into new a.
@@ -621,7 +622,7 @@ void pbwtCursorForwardsAPacked (PbwtCursor *u)
 
 /***************************************************/
 
-PBWT *pbwtSelectSites (PBWT *pOld, Array sites, BOOL isKeepOld)
+PBWT *PBWT::pbwtSelectSites (PBWT *pOld, Array sites, BOOL isKeepOld)
 {
   PBWT *pNew = pbwtCreate (pOld->M, 0) ;
   int ip = 0, ia = 0, j ;
@@ -683,7 +684,7 @@ PBWT *pbwtSelectSites (PBWT *pOld, Array sites, BOOL isKeepOld)
 
 /***************************************************/
 
-PBWT *pbwtRemoveSites (PBWT *pOld, Array sites, BOOL isKeepOld)
+PBWT *PBWT::pbwtRemoveSites (PBWT *pOld, Array sites, BOOL isKeepOld)
 {
   PBWT *pNew = pbwtCreate (pOld->M, 0) ;
   int ip = 0, ia = 0, j ;

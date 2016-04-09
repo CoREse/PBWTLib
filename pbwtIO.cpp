@@ -24,13 +24,13 @@
 #include "pbwt.h"
 #include <ctype.h>
 
-int nCheckPoint = 0 ;	/* if set non-zero write pbwt and sites files every n sites when parsing external files */
+int PBWT::nCheckPoint = 0 ;	/* if set non-zero write pbwt and sites files every n sites when parsing external files */
 
 static BOOL isWriteImputeRef = FALSE ;	/* modifies WriteSites() and WriteHaplotypes() for pbwtWriteImputeRef */
 
 /* basic function to store packed PBWT */
 
-void pbwtWrite (PBWT *p, FILE *fp) /* just writes compressed pbwt in yz */
+void PBWT::pbwtWrite (PBWT *p, FILE *fp) /* just writes compressed pbwt in yz */
 {
   if (!p || !p->yz) die ("pbwtWrite called without a valid pbwt") ;
   if (!p->aFstart || !p->aFend) die ("pbwtWrite called without start and end indexes") ;
@@ -53,30 +53,30 @@ void pbwtWrite (PBWT *p, FILE *fp) /* just writes compressed pbwt in yz */
   if (fwrite (arrp(p->yz, 0, uchar), sizeof(uchar), arrayMax(p->yz), fp) != arrayMax(p->yz))
     die ("error writing data in pbwtWrite") ;
 
-  fprintf (logFile, "written %ld chars pbwt: M, N are %d, %d\n", arrayMax(p->yz), p->M, p->N) ;
+  fprintf (PBWT::logFile, "written %ld chars pbwt: M, N are %d, %d\n", arrayMax(p->yz), p->M, p->N) ;
 }
 
-void pbwtWriteSites (PBWT *p, FILE *fp)
+void PBWT::pbwtWriteSites (PBWT *p, FILE *fp)
 {
   if (!p || !p->sites) die ("pbwtWriteSites called without sites") ;
 
   int i ;
   for (i = 0 ; i < p->N ; ++i)
-    { Site *s = arrp(p->sites, i, Site) ;
+    { PBWT::Site *s = arrp(p->sites, i, PBWT::Site) ;
       if (isWriteImputeRef)
 	fprintf (fp, "site%d\t%d", i+1, s->x) ;
       else
 	fprintf (fp, "%s\t%d", p->chrom ? p->chrom : ".", s->x) ;
-      fprintf (fp, "\t%s", dictName (variationDict, s->varD)) ;
+      fprintf (fp, "\t%s", dictName (PBWT::variationDict, s->varD)) ;
       fputc ('\n', fp) ;
     }
   if (ferror (fp)) die ("error writing sites file") ;
 
-  fprintf (logFile, "written %d sites from %d to %d\n", p->N, 
-	   arrp(p->sites, 0, Site)->x, arrp(p->sites, p->N-1, Site)->x) ;
+  fprintf (PBWT::logFile, "written %d sites from %d to %d\n", p->N, 
+	   arrp(p->sites, 0, PBWT::Site)->x, arrp(p->sites, p->N-1, PBWT::Site)->x) ;
 }
 
-void pbwtWriteSamples (PBWT *p, FILE *fp)
+void PBWT::pbwtWriteSamples (PBWT *p, FILE *fp)
 {
   if (!p || !p->samples) die ("pbwtWriteSamples called without samples") ;
 
@@ -91,7 +91,7 @@ void pbwtWriteSamples (PBWT *p, FILE *fp)
     }     
   if (ferror (fp)) die ("error writing samples file") ;
 
-  fprintf (logFile, "written %d samples\n", p->M/2) ;
+  fprintf (PBWT::logFile, "written %d samples\n", p->M/2) ;
 }
 
 void writeDataOffset (FILE *fp, char *name, Array offset, Array data, int N)
@@ -108,16 +108,16 @@ void writeDataOffset (FILE *fp, char *name, Array offset, Array data, int N)
   if (fwrite (arrp(offset, 0, long), sizeof(long), N, fp) != N)
     die ("error writing offsets in write %s", name) ;
 
-  fprintf (logFile, "written %ld chars compressed %s data\n", n, name) ;
+  fprintf (PBWT::logFile, "written %ld chars compressed %s data\n", n, name) ;
 }
 
-void pbwtWriteMissing (PBWT *p, FILE *fp)
+void PBWT::pbwtWriteMissing (PBWT *p, FILE *fp)
 { writeDataOffset (fp, "missing", p->zMissing, p->missingOffset, p->N) ; }
 
-void pbwtWriteDosage (PBWT *p, FILE *fp)
+void PBWT::pbwtWriteDosage (PBWT *p, FILE *fp)
 { writeDataOffset (fp, "dosage", p->zDosage, p->dosageOffset, p->N) ; }
 
-void pbwtWriteReverse (PBWT *p, FILE *fp)
+void PBWT::pbwtWriteReverse (PBWT *p, FILE *fp)
 {
   if (!p || !p->zz) die ("pbwtWriteReverse called without reverse pbwt") ;
 
@@ -125,13 +125,13 @@ void pbwtWriteReverse (PBWT *p, FILE *fp)
   int* tstart = p->aFstart ; p->aFstart = p->aRstart ;
   int* tend = p->aFend ; p->aFend = p->aRend ;
 
-  fprintf (logFile, "reverse: ") ; pbwtWrite (p, fp) ;
+  fprintf (PBWT::logFile, "reverse: ") ; pbwtWrite (p, fp) ;
   
   p->yz = tz ; p->aFstart = tstart ; p->aFend = tend ;
 }
 
 
-void pbwtWriteAll (PBWT *p, char *root)
+void PBWT::pbwtWriteAll (PBWT *p, char *root)
 {
   FILE *fp ;
 #define FOPEN_W(tag)  if (!(fp = fopenTag (root, tag, "w"))) die ("failed to open root.%s", tag)
@@ -143,7 +143,7 @@ void pbwtWriteAll (PBWT *p, char *root)
   if (p->zz) { FOPEN_W("reverse") ; pbwtWriteReverse (p, fp) ; fclose (fp) ; }
 }
 
-void pbwtWritePhase (PBWT *p, char *filename)
+void PBWT::pbwtWritePhase (PBWT *p, char *filename)
 {
   FILE *fp ;
   if (!(fp = fopen (filename, "w"))) die ("failed to open %s",filename);
@@ -155,7 +155,7 @@ void pbwtWritePhase (PBWT *p, char *filename)
   pbwtWriteTransposedHaplotypes(p,fp);
 }
 
-void pbwtCheckPoint (PbwtCursor *u, PBWT *p)
+void PBWT::pbwtCheckPoint (PbwtCursor *u, PBWT *p)
 {
   static BOOL isA = TRUE ;
   char fileNameRoot[20] ;
@@ -169,7 +169,7 @@ void pbwtCheckPoint (PbwtCursor *u, PBWT *p)
 
 /*******************************/
 
-PBWT *pbwtRead (FILE *fp) 
+PBWT *PBWT::pbwtRead (FILE *fp) 
 {
   int m, n ;
   long nz ;
@@ -212,7 +212,7 @@ PBWT *pbwtRead (FILE *fp)
   if (fread (arrp(p->yz, 0, uchar), sizeof(uchar), nz, fp) != nz)
     die ("error reading data in pbwt file") ;
 
-  fprintf (logFile, "read pbwt %s file with %ld bytes: M, N are %d, %d\n", tag, nz, p->M, p->N) ;
+  fprintf (PBWT::logFile, "read pbwt %s file with %ld bytes: M, N are %d, %d\n", tag, nz, p->M, p->N) ;
   return p ;
 }
 
@@ -229,18 +229,18 @@ static BOOL readMatchChrom (char **pChrom, FILE *fp)
   return TRUE ;
 }
 
-Array pbwtReadSitesFile (FILE *fp, char **chrom)
+Array PBWT::pbwtReadSitesFile (FILE *fp, char **chrom)
 {
   char c ;
-  Site *s ;
+  PBWT::Site *s ;
   int line = 1 ;
   Array varTextArray = arrayCreate (256, char) ;
-  Array sites = arrayCreate (4096, Site) ;
+  Array sites = arrayCreate (4096, PBWT::Site) ;
 
   while (!feof(fp))
     if (readMatchChrom (chrom, fp))	/* if p->chrom then match, else set if not "." */
       { if (feof(fp)) break ;
-	s = arrayp(sites, arrayMax(sites), Site) ;
+	s = arrayp(sites, arrayMax(sites), PBWT::Site) ;
 	s->x = 0 ; while (isdigit(c = fgetc(fp))) s->x = s->x*10 + (c-'0') ;
 	if (!feof(fp) && c != '\n')
 	  { if (!isspace (c)) die ("bad position line %d in sites file", line) ;
@@ -250,7 +250,7 @@ Array pbwtReadSitesFile (FILE *fp, char **chrom)
 	    while ((c = fgetc(fp)) && c != '\n') 
 	      array(varTextArray, i++, char) = c ;
 	    array(varTextArray, i, char) = 0 ;
-	    dictAdd (variationDict, arrayp(varTextArray,0,char), &s->varD) ;
+	    dictAdd (PBWT::variationDict, arrayp(varTextArray,0,char), &s->varD) ;
 	    while (c != '\n' && !feof(fp)) c = fgetc(fp) ;
 	  }
 	++line ;
@@ -260,13 +260,13 @@ Array pbwtReadSitesFile (FILE *fp, char **chrom)
 
   if (ferror (fp)) die ("error reading sites file") ;
   
-  fprintf (logFile, "read %ld sites on chromosome %s from file\n", arrayMax(sites), *chrom) ;
+  fprintf (PBWT::logFile, "read %ld sites on chromosome %s from file\n", arrayMax(sites), *chrom) ;
 
   arrayDestroy (varTextArray) ;
   return sites ;
 }
 
-void pbwtReadSites (PBWT *p, FILE *fp)
+void PBWT::pbwtReadSites (PBWT *p, FILE *fp)
 {
   if (!p) die ("pbwtReadSites called without a valid pbwt") ;
 
@@ -277,7 +277,7 @@ void pbwtReadSites (PBWT *p, FILE *fp)
 
 Array readRefFreq (PBWT *p, FILE *fp)
 {
-  Array a = arrayCreate (p->N, Site) ;
+  Array a = arrayCreate (p->N, PBWT::Site) ;
   char chrom[256], var[256] ;
   int pos ;
   double freq ;
@@ -287,20 +287,20 @@ Array readRefFreq (PBWT *p, FILE *fp)
       if (strcmp (chrom, p->chrom))
 	die ("chromosome mismatch in readRefFreq '%s' is not '%s'", chrom, p->chrom) ;
       char *cp = var ; while ((*cp = getc(fp)) != '\n' && !feof(fp)) ++cp ; *cp = 0 ;
-      Site *s = arrayp(a, arrayMax(a), Site) ;
+      PBWT::Site *s = arrayp(a, arrayMax(a), PBWT::Site) ;
       s->x = pos ; 
       s->refFreq = freq ;
-      dictAdd (variationDict, var, &s->varD) ;
+      dictAdd (PBWT::variationDict, var, &s->varD) ;
     }
   return a ;
 }
 
-void pbwtReadRefFreq (PBWT *p, FILE *fp)
+void PBWT::pbwtReadRefFreq (PBWT *p, FILE *fp)
 { if (!p || !p->sites) die ("pbwtReadRefFreq called without current site information") ;
   Array a = readRefFreq (p, fp) ;
   
   int i = 0, j = 0 ;
-  Site *ps = arrp(p->sites,i,Site), *as = arrp(a,j,Site) ;
+  PBWT::Site *ps = arrp(p->sites,i,Site), *as = arrp(a,j,Site) ;
   while (i < p->N)
     { while (j < arrayMax(a) && 
 	     (as->x < ps->x || (as->x == ps->x && as->varD < ps->varD))) { ++j ; ++as ; }
@@ -309,7 +309,7 @@ void pbwtReadRefFreq (PBWT *p, FILE *fp)
     }
 }
 
-Array pbwtReadSamplesFile (FILE *fp) /* for now assume all samples diploid */
+Array PBWT::pbwtReadSamplesFile (FILE *fp) /* for now assume all samples diploid */
 /* should add code to this to read father and mother and population
    propose to use IMPUTE2 format for this */
 {
@@ -336,12 +336,12 @@ Array pbwtReadSamplesFile (FILE *fp) /* for now assume all samples diploid */
     }
   arrayDestroy (nameArray) ;
 
-  fprintf (logFile, "read %ld sample names\n", arrayMax(samples)) ;
+  fprintf (PBWT::logFile, "read %ld sample names\n", arrayMax(samples)) ;
 
   return samples ;
 }
 
-void pbwtReadSamples (PBWT *p, FILE *fp)
+void PBWT::pbwtReadSamples (PBWT *p, FILE *fp)
 {
   if (!p) die ("pbwtReadSamples called without a valid pbwt") ;
   Array samples = pbwtReadSamplesFile (fp) ;
@@ -370,7 +370,7 @@ static void readDataOffset (FILE *fp, char *name, Array *offset, Array *data, in
   if (fread (arrp(*data, 0, uchar), sizeof(uchar), n, fp) != n)
     die ("error reading zMissing in pbwtReadMissing") ;
   arrayMax(*data) = n ;
-  fprintf (logFile, "read %ld chars compressed missing data\n", n) ;
+  fprintf (PBWT::logFile, "read %ld chars compressed missing data\n", n) ;
 
   *offset = arrayReCreate (*offset, N, long) ;
   if (dummy != -1)		/* old version with ints not longs */
@@ -386,13 +386,13 @@ static void readDataOffset (FILE *fp, char *name, Array *offset, Array *data, in
   arrayMax(*offset) = N ;
 }
 
-void pbwtReadMissing (PBWT *p, FILE *fp)
+void PBWT::pbwtReadMissing (PBWT *p, FILE *fp)
 { readDataOffset (fp, "missing", &p->zMissing, &p->missingOffset, p->N) ; }
 
-void pbwtReadDosage (PBWT *p, FILE *fp)
+void PBWT::pbwtReadDosage (PBWT *p, FILE *fp)
 { readDataOffset (fp, "dosage", &p->zDosage, &p->dosageOffset, p->N) ; }
 
-void pbwtReadReverse (PBWT *p, FILE *fp)
+void PBWT::pbwtReadReverse (PBWT *p, FILE *fp)
 {
   if (!p) die ("pbwtReadReverse called without a valid pbwt") ;
 
@@ -405,7 +405,7 @@ void pbwtReadReverse (PBWT *p, FILE *fp)
   pbwtDestroy (q) ;
  }
 
-PBWT *pbwtReadAll (char *root)
+PBWT *PBWT::pbwtReadAll (char *root)
 {
   PBWT *p ;
 
@@ -435,7 +435,7 @@ static void parseMacsHeader (FILE *fp, int *M, double *L)	/* parse MACS file hea
   while (fgetc(fp) != '\n') ;	/* ignore rest of line */
 }
 
-static BOOL parseMacsSite (FILE *fp, Site *s, int M, double L, uchar *yp) /* parse MACS site line */
+static BOOL parseMacsSite (FILE *fp, PBWT::Site *s, int M, double L, uchar *yp) /* parse MACS site line */
 {
   static uchar conv[256] ;
   static BOOL isFirst = TRUE ;
@@ -457,7 +457,7 @@ static BOOL parseMacsSite (FILE *fp, Site *s, int M, double L, uchar *yp) /* par
   return TRUE ;
 }
 
-PBWT *pbwtReadMacs (FILE *fp)
+PBWT *PBWT::pbwtReadMacs (FILE *fp)
 {
   PBWT *p ;
   int M ;
@@ -470,7 +470,7 @@ PBWT *pbwtReadMacs (FILE *fp)
 
   parseMacsHeader (fp, &M, &L) ;
   p = pbwtCreate (M, 0) ;
-  p->sites = arrayCreate(4096, Site) ;
+  p->sites = arrayCreate(4096, PBWT::Site) ;
   u = pbwtCursorCreate (p, TRUE, TRUE) ;
   x = myalloc (M+1, uchar) ; x[M] = Y_SENTINEL ;	/* sentinel required for packing */
 
@@ -482,9 +482,9 @@ PBWT *pbwtReadMacs (FILE *fp)
     }
   pbwtCursorToAFend (u, p) ;
 
-  fprintf (logFile, "read MaCS file: M, N are\t%d\t%d\n", M, p->N) ;
+  fprintf (PBWT::logFile, "read MaCS file: M, N are\t%d\t%d\n", M, p->N) ;
   if (isStats)
-    fprintf (logFile, "                xtot, ytot are\t%d\t%d\n", nxTot, nyTot) ;
+    fprintf (PBWT::logFile, "                xtot, ytot are\t%d\t%d\n", nxTot, nyTot) ;
 
   free(x) ; pbwtCursorDestroy (u) ;
 
@@ -512,7 +512,7 @@ static BOOL parseVcfqLine (PBWT **pp, FILE *fp, Array x)
 {
   char c, *chrom, *var ;
   int pos, m, len ;
-  Site *s ;
+  PBWT::Site *s ;
   PBWT *p = *pp ;
 
   if (!p)			/* first call on a file - don't know M yet */
@@ -540,14 +540,14 @@ static BOOL parseVcfqLine (PBWT **pp, FILE *fp, Array x)
   if (p && m != p->M) die ("length mismatch reading vcfq line") ;
 
   if (!*pp)
-    { p = *pp = pbwtCreate (m, 0) ;
+    { p = *pp = PBWT::pbwtCreate (m, 0) ;
       if (strcmp (chrom, ".")) p->chrom = chrom ;
-      p->sites = arrayCreate(4096, Site) ;
+      p->sites = arrayCreate(4096, PBWT::Site) ;
       array(x,p->M,uchar) = Y_SENTINEL ; /* sentinel required for packing */
     }
-  s = arrayp(p->sites, arrayMax(p->sites), Site) ;
+  s = arrayp(p->sites, arrayMax(p->sites), PBWT::Site) ;
   s->x = pos ;
-  dictAdd (variationDict, var, &s->varD) ;
+  dictAdd (PBWT::variationDict, var, &s->varD) ;
 
   ++p->N ;
   return TRUE ;
@@ -562,25 +562,25 @@ static PBWT *pbwtReadLineFile (FILE *fp, char* type, ParseLineFunc parseLine)
   uchar *x ;		/* original, sorted, compressed */
   int *a ;
   Array xArray = arrayCreate (10000, uchar) ;
-  PbwtCursor *u ;
+  PBWT::PbwtCursor *u ;
 
   while ((*parseLine) (&p, fp, xArray)) /* create p first time round */
     { if (!p->yz)		/* first line; p was just made! */
 	{ p->yz = arrayCreate(4096*32, uchar) ;
-	  u = pbwtCursorCreate (p, TRUE, TRUE) ;
+	  u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
 	}
       x = arrp(xArray,0,uchar) ;
       for (j = 0 ; j < p->M ; ++j) u->y[j] = x[u->a[j]] ;
-      pbwtCursorWriteForwards (u) ;
-      if (nCheckPoint && !(p->N % nCheckPoint))	pbwtCheckPoint (u, p) ;
+      PBWT::pbwtCursorWriteForwards (u) ;
+      if (PBWT::nCheckPoint && !(p->N % PBWT::nCheckPoint))	PBWT::pbwtCheckPoint (u, p) ;
     }
-  pbwtCursorToAFend (u, p) ;
+  PBWT::pbwtCursorToAFend (u, p) ;
 
-  fprintf (logFile, "read %s file", type) ;
-  if (p->chrom) fprintf (logFile, " for chromosome %s", p->chrom) ;
-  fprintf (logFile, ": M, N are\t%d\t%d; yz length is %ld\n", p->M, p->N, arrayMax(p->yz)) ;
+  fprintf (PBWT::logFile, "read %s file", type) ;
+  if (p->chrom) fprintf (PBWT::logFile, " for chromosome %s", p->chrom) ;
+  fprintf (PBWT::logFile, ": M, N are\t%d\t%d; yz length is %ld\n", p->M, p->N, arrayMax(p->yz)) ;
 
-  arrayDestroy(xArray) ; pbwtCursorDestroy (u) ;
+  arrayDestroy(xArray) ; PBWT::pbwtCursorDestroy (u) ;
 
   return p ;
 }
@@ -594,7 +594,7 @@ static PBWT *pbwtReadLineTwoFile (FILE *fp, FILE *lp, char* type, ParseTwoLineFu
   uchar *x ;		/* original, sorted, compressed */
   int *a ;
   Array xArray = arrayCreate (10000, uchar) ;
-  PbwtCursor *u ;
+  PBWT::PbwtCursor *u ;
 
   /* skip header of legend file */
   while (!feof(lp))
@@ -604,25 +604,25 @@ static PBWT *pbwtReadLineTwoFile (FILE *fp, FILE *lp, char* type, ParseTwoLineFu
   while ((*parseLine) (&p, fp, lp, xArray)) /* create p first time round */
     { if (!p->yz)		/* first line; p was just made! */
 	{ p->yz = arrayCreate(4096*32, uchar) ;
-	  u = pbwtCursorCreate (p, TRUE, TRUE) ;
+	  u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
 	}
       x = arrp(xArray,0,uchar) ;
       for (j = 0 ; j < p->M ; ++j) u->y[j] = x[u->a[j]] ;
-      pbwtCursorWriteForwards (u) ;
-      if (nCheckPoint && !(p->N % nCheckPoint))	pbwtCheckPoint (u, p) ;
+      PBWT::pbwtCursorWriteForwards (u) ;
+      if (PBWT::nCheckPoint && !(p->N % PBWT::nCheckPoint))	PBWT::pbwtCheckPoint (u, p) ;
     }
-  pbwtCursorToAFend (u, p) ;
+  PBWT::pbwtCursorToAFend (u, p) ;
 
   fprintf (stderr, "read %s file", type) ;
   if (p->chrom) fprintf (stderr, " for chromosome %s", p->chrom) ;
   fprintf (stderr, ": M, N are\t%d\t%d; yz length is %ld\n", p->M, p->N, arrayMax(p->yz)) ;
 
-  arrayDestroy(xArray) ; pbwtCursorDestroy (u) ;
+  arrayDestroy(xArray) ; PBWT::pbwtCursorDestroy (u) ;
 
   return p ;
 }
 
-PBWT *pbwtReadVcfq (FILE *fp) { return pbwtReadLineFile (fp, "vcfq", parseVcfqLine) ; }
+PBWT *PBWT::pbwtReadVcfq (FILE *fp) { return pbwtReadLineFile (fp, "vcfq", parseVcfqLine) ; }
 
 /*************** read impute2 .gen format - contains sites not samples **********/
 
@@ -659,13 +659,13 @@ static BOOL parseGenLine (PBWT **pp, FILE *fp, Array x) /* based on parseVcfqLin
   if (p && m != p->M) die ("length mismatch reading vcfq line") ;
 
   if (!*pp)
-    { p = *pp = pbwtCreate (m, 0) ;
-      p->sites = arrayCreate(4096, Site) ;
+    { p = *pp = PBWT::pbwtCreate (m, 0) ;
+      p->sites = arrayCreate(4096, PBWT::Site) ;
       array(x,p->M,uchar) = Y_SENTINEL ; /* sentinel required for packing */
     }
-  Site *s = arrayp(p->sites, arrayMax(p->sites), Site) ;
+  PBWT::Site *s = arrayp(p->sites, arrayMax(p->sites), PBWT::Site) ;
   s->x = pos ;
-  dictAdd (variationDict, var, &s->varD) ;
+  dictAdd (PBWT::variationDict, var, &s->varD) ;
 
   ++p->N ;
   return TRUE ;
@@ -697,13 +697,13 @@ static BOOL parseHapLine (PBWT **pp, FILE *fp, Array x) /* same as parseGenLine 
   if (p && m != p->M) die ("length mismatch reading haps line") ;
   
   if (!*pp)
-  { p = *pp = pbwtCreate (m, 0) ;
-    p->sites = arrayCreate(4096, Site) ;
+  { p = *pp = PBWT::pbwtCreate (m, 0) ;
+    p->sites = arrayCreate(4096, PBWT::Site) ;
     array(x,p->M,uchar) = Y_SENTINEL ; /* sentinel required for packing */
   }
-  Site *s = arrayp(p->sites, arrayMax(p->sites), Site) ;
+  PBWT::Site *s = arrayp(p->sites, arrayMax(p->sites), PBWT::Site) ;
   s->x = pos ;
-  dictAdd (variationDict, var, &s->varD) ;
+  dictAdd (PBWT::variationDict, var, &s->varD) ;
   
   ++p->N ;
   return TRUE ;
@@ -739,42 +739,42 @@ static BOOL parseHapLegendLine (PBWT **pp, FILE *fp, FILE *lp, Array x) /* same 
   if (p && m != p->M) die ("length mismatch reading haps line") ;
   
   if (!*pp)
-  { p = *pp = pbwtCreate (m, 0) ;
-    p->sites = arrayCreate(4096, Site) ;
+  { p = *pp = PBWT::pbwtCreate (m, 0) ;
+    p->sites = arrayCreate(4096, PBWT::Site) ;
     array(x,p->M,uchar) = Y_SENTINEL ; /* sentinel required for packing */
   }
-  Site *s = arrayp(p->sites, arrayMax(p->sites), Site) ;
+  PBWT::Site *s = arrayp(p->sites, arrayMax(p->sites), PBWT::Site) ;
   s->x = pos ;
-  dictAdd (variationDict, var, &s->varD) ;
+  dictAdd (PBWT::variationDict, var, &s->varD) ;
   
   ++p->N ;
   return TRUE ;
 }
 
-PBWT *pbwtReadGen (FILE *fp, char *chrom) 
+PBWT *PBWT::pbwtReadGen (FILE *fp, char *chrom) 
 { 
   nGenMissing = 0 ;
   PBWT *p = pbwtReadLineFile (fp, "gen", parseGenLine) ;
   p->chrom = strdup (chrom) ;
-  if (nGenMissing) fprintf (logFile, "%ld missing genotypes set to 00\n", nGenMissing) ;
+  if (nGenMissing) fprintf (PBWT::logFile, "%ld missing genotypes set to 00\n", nGenMissing) ;
   return p ;
 }
 
-PBWT *pbwtReadHap (FILE *fp, char *chrom)
+PBWT *PBWT::pbwtReadHap (FILE *fp, char *chrom)
 {
   PBWT *p = pbwtReadLineFile (fp, "hap", parseHapLine) ;
   p->chrom = strdup (chrom) ;
   return p ;
 }
 
-PBWT *pbwtReadHapLegend (FILE *fp, FILE *lp, char *chrom)
+PBWT *PBWT::pbwtReadHapLegend (FILE *fp, FILE *lp, char *chrom)
 {
   PBWT *p = pbwtReadLineTwoFile (fp, lp, "hap-legend", parseHapLegendLine) ;
   p->chrom = strdup (chrom) ;
   return p ;
 }
 
-PBWT *pbwtReadPhase (FILE *fp) /* Li and Stephens PHASE format */
+PBWT *PBWT::pbwtReadPhase (FILE *fp) /* Li and Stephens PHASE format */
 {
   int nhaps=0,nsnps=0,ninds=0;
   int version=2;
@@ -794,20 +794,20 @@ PBWT *pbwtReadPhase (FILE *fp) /* Li and Stephens PHASE format */
     fgetword (fp); /* Remove the initial P */
     version=1;
   }
-  fprintf(logFile,"Reading %i SNPs %i haplotypes and %i individuals from PHASE format version %i\n",nsnps,nhaps,ninds,version);
+  fprintf(PBWT::logFile,"Reading %i SNPs %i haplotypes and %i individuals from PHASE format version %i\n",nsnps,nhaps,ninds,version);
   PBWT *p = pbwtCreate (nhaps, nsnps) ;
   p->chrom = strdup ("0") ; /* chromosome number not available from phase files */
-  p->sites = arrayCreate (4096, Site) ;
+  p->sites = arrayCreate (4096, PBWT::Site) ;
   int i ; for (i = 0 ; i < p->N ; ++i) {
     tc=fgetword(fp);
     arrayp(p->sites,i,Site)->x = atoi (tc) ;
   }
   if (getc(fp) != '\n') die ("bad location line in phase file") ;
-  char var[2] ="S"; var[1] = 0 ; /*dummy variation line - used to create variationDict */
+  char var[2] ="S"; var[1] = 0 ; /*dummy variation line - used to create PBWT::variationDict */
   for (i = 0 ; i < p->N ; ++i) 
     {
       if(version==1) *var = getc(fp) ;
-      dictAdd (variationDict, var, &(arrayp(p->sites,i,Site)->varD)) ; }
+      dictAdd (PBWT::variationDict, var, &(arrayp(p->sites,i,Site)->varD)) ; }
   if(version==1) if (getc(fp) != '\n') die ("bad 5th line in phase file") ;
 
   uchar **data = myalloc (p->N, uchar*) ;
@@ -817,26 +817,26 @@ PBWT *pbwtReadPhase (FILE *fp) /* Li and Stephens PHASE format */
       if (getc(fp) != '\n') die ("bad %dth line in phase file", 7+j-version) ;
     }
   p->yz = arrayCreate(4096*32, uchar) ;
-  PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
+  PbwtCursor *u = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
   for (i = 0 ; i < p->N ; ++i)
     { for (j = 0 ; j < p->M ; ++j) u->y[j] = data[i][u->a[j]] ;
-      pbwtCursorWriteForwards (u) ;
+      PBWT::pbwtCursorWriteForwards (u) ;
       if (nCheckPoint && !((i+1) % nCheckPoint)) pbwtCheckPoint (u, p) ;
     }
-  pbwtCursorToAFend (u, p) ;
+  PBWT::pbwtCursorToAFend (u, p) ;
 
-  fprintf (logFile, "read phase file") ;
-  if (p->chrom) fprintf (logFile, " for chromosome %s", p->chrom) ;
-  fprintf (logFile, ": M, N are\t%d\t%d; yz length is %ld\n", p->M, p->N, arrayMax(p->yz)) ;
+  fprintf (PBWT::logFile, "read phase file") ;
+  if (p->chrom) fprintf (PBWT::logFile, " for chromosome %s", p->chrom) ;
+  fprintf (PBWT::logFile, ": M, N are\t%d\t%d; yz length is %ld\n", p->M, p->N, arrayMax(p->yz)) ;
 
   for (i = 0 ; i < p->N ; ++i) free(data[i]) ;
-  free (data) ; pbwtCursorDestroy (u) ;
+  free (data) ; PBWT::pbwtCursorDestroy (u) ;
   return p ;
 }
 
 /*************** write haplotypes ******************/
 
-void pbwtWriteHaplotypes (FILE *fp, PBWT *p)
+void PBWT::pbwtWriteHaplotypes (FILE *fp, PBWT *p)
 {
   int i, j, n = 0, M = p->M ;
   uchar *hap = myalloc (M, uchar) ;
@@ -853,13 +853,13 @@ void pbwtWriteHaplotypes (FILE *fp, PBWT *p)
     }
   free (hap) ; pbwtCursorDestroy (u) ;
 
-  fprintf (logFile, "written haplotype file: %d rows of %d\n", p->N, M) ;
+  fprintf (PBWT::logFile, "written haplotype file: %d rows of %d\n", p->N, M) ;
 }
 
-void pbwtWriteTransposedHaplotypes (PBWT *p, FILE *fp)
+void PBWT::pbwtWriteTransposedHaplotypes (PBWT *p, FILE *fp)
 {
   int i, j ;
-  uchar **hap = pbwtHaplotypes (p) ;
+  uchar **hap = PBWT::pbwtHaplotypes (p) ;
   
   for (j = 0 ; j < p->M ; ++j)
     { for (i = 0 ; i < p->N ; ++i) 
@@ -869,12 +869,12 @@ void pbwtWriteTransposedHaplotypes (PBWT *p, FILE *fp)
   
   for (i = 0 ; j < p->M ; ++j) free(hap[j]) ;  free (hap) ;
   
-  fprintf (logFile, "written transposed haplotype file: %d rows of %d\n", p->M,p->N) ;
+  fprintf (PBWT::logFile, "written transposed haplotype file: %d rows of %d\n", p->M,p->N) ;
 }
 
 /*************** write IMPUTE files ********************/
 
-void pbwtWriteImputeRef (PBWT *p, char *fileNameRoot)
+void PBWT::pbwtWriteImputeRef (PBWT *p, char *fileNameRoot)
 {
   FILE *fp ;
 
@@ -890,7 +890,7 @@ void pbwtWriteImputeRef (PBWT *p, char *fileNameRoot)
   isWriteImputeRef = FALSE ;
 }
 
-void pbwtWriteImputeHapsG (PBWT *p, FILE *fp)
+void PBWT::pbwtWriteImputeHapsG (PBWT *p, FILE *fp)
 {
   if (!p || !p->sites) die ("pbwtWriteImputeHaps called without sites") ;
 
@@ -899,9 +899,9 @@ void pbwtWriteImputeHapsG (PBWT *p, FILE *fp)
   PbwtCursor *u = pbwtCursorCreate (p, TRUE, TRUE) ;
 
   for (i = 0 ; i < p->N ; ++i)
-    { Site *s = arrp(p->sites, i, Site) ;
+    { PBWT::Site *s = arrp(p->sites, i, PBWT::Site) ;
       fprintf (fp, "site%d\tsite%d\t%d", i+1, i+1, s->x) ;
-      fprintf (fp, "\t%s", dictName (variationDict, s->varD)) ;
+      fprintf (fp, "\t%s", dictName (PBWT::variationDict, s->varD)) ;
       
       for (j = 0 ; j < p->M ; ++j) hap[u->a[j]] = u->y[j] ;
       for (j = 0 ; j < p->M ; ++j) putc (' ', fp), putc (hap[j]?'1':'0', fp) ;
@@ -912,7 +912,7 @@ void pbwtWriteImputeHapsG (PBWT *p, FILE *fp)
   free (hap) ; pbwtCursorDestroy (u) ;
 }
 
-void pbwtWriteGen (PBWT *p, FILE *fp)
+void PBWT::pbwtWriteGen (PBWT *p, FILE *fp)
 {
   if (!p || !p->sites) die ("pbwtWriteImputeHaps called without sites") ;
 
@@ -923,8 +923,8 @@ void pbwtWriteGen (PBWT *p, FILE *fp)
   double *d = 0, *ad = isDosage ? myalloc (p->M, double) : NULL;
 
   for (i = 0 ; i < p->N ; ++i)
-    { Site *s = arrp(p->sites, i, Site) ;
-      char *als = strdup( dictName(variationDict, s->varD) ), *ss = als ;
+    { PBWT::Site *s = arrp(p->sites, i, PBWT::Site) ;
+      char *als = strdup( dictName(PBWT::variationDict, s->varD) ), *ss = als ;
       while ( *ss ) { if ( *ss=='\t' ) *ss = '_' ; ss++ ; }
       fprintf (fp, "%s:%d_%s %s:%d_%s %d", p->chrom, s->x, als, p->chrom, s->x, als, s->x) ;
       ss = als ;

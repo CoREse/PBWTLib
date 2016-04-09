@@ -14,7 +14,7 @@ typedef struct
 	int *cpos;		 // current position of each PBWT (site index)
 	int mpos;			 // minimum position across all PBWT (position)
 	char *mals;		 // alleles at the mpos (multiple records with different alleles can be present)
-	PbwtCursor **cursor;
+	PBWT::PbwtCursor **cursor;
 	int *unpacked;
 }
 pbwt_reader_t;
@@ -25,7 +25,7 @@ static pbwt_reader_t *pbwt_reader_init(const char **fnames, int nfiles)
 	reader->n        = nfiles;
 	reader->pbwt     = myalloc(nfiles,PBWT*);
 	reader->cpos     = myalloc(nfiles,int);
-	reader->cursor   = myalloc(nfiles,PbwtCursor*);
+	reader->cursor   = myalloc(nfiles,PBWT::PbwtCursor*);
 	reader->unpacked = myalloc(nfiles,int);
 
 	int i;
@@ -33,7 +33,7 @@ static pbwt_reader_t *pbwt_reader_init(const char **fnames, int nfiles)
 	{
 		FILE *fp = fopen(fnames[i],"r");
 		if ( !fp ) die("failed to open %s: %s\n", fnames[i], strerror(errno));
-		reader->pbwt[i] = pbwtRead(fp);
+		reader->pbwt[i] = PBWT::pbwtRead(fp);
 		fclose(fp);
 
 		int j = strlen(fnames[i]);
@@ -44,10 +44,10 @@ static pbwt_reader_t *pbwt_reader_init(const char **fnames, int nfiles)
 		if ( !fp ) die("failed to open %s: %s\n", fname, strerror(errno));
 		free(fname);
 
-		pbwtReadSites(reader->pbwt[i], fp);
+		PBWT::pbwtReadSites(reader->pbwt[i], fp);
 		fclose(fp);
 
-		reader->cursor[i] = pbwtNakedCursorCreate(reader->pbwt[i]->M, 0);
+		reader->cursor[i] = PBWT::pbwtNakedCursorCreate(reader->pbwt[i]->M, 0);
 		reader->unpacked[i] = 0;
 		reader->cpos[i] = 0;
 	}
@@ -64,8 +64,8 @@ static void pbwt_reader_destroy(pbwt_reader_t *reader)
 	int i;
 	for (i=0; i<reader->n; i++)
 	{
-		pbwtDestroy(reader->pbwt[i]);
-		pbwtCursorDestroy(reader->cursor[i]);
+		PBWT::pbwtDestroy(reader->pbwt[i]);
+		PBWT::pbwtCursorDestroy(reader->cursor[i]);
 	}
 	free(reader->pbwt);
 	free(reader->cursor);
@@ -87,16 +87,16 @@ static int pbwt_reader_next(pbwt_reader_t *reader, int nshared)
 		int j		= reader->cpos[i];
 		if ( j>=p->N ) continue;		// no more sites in this pbwt
 
-		Site *site = arrp(p->sites, j, Site);
-		char *als  = dictName(variationDict, site->varD);
+		PBWT::Site *site = arrp(p->sites, j, PBWT::Site);
+		char *als  = dictName(PBWT::variationDict, site->varD);
 
 		// assuming:
 		//	- one chromosome only (no checking sequence name)
 		//	- sorted alleles (strcmp() on als)
 		while ( j < p->N && site->x <= reader->mpos && (!reader->mals || strcmp(als,reader->mals)<=0) )
 		{
-			site = arrp(p->sites, j, Site);
-			als  = dictName(variationDict, site->varD);
+			site = arrp(p->sites, j, PBWT::Site);
+			als  = dictName(PBWT::variationDict, site->varD);
 			reader->cpos[i] = j++;
 		}
 		if ( reader->cpos[i]+1 >= p->N && site->x == reader->mpos && (!reader->mals || !strcmp(als,reader->mals)) )
@@ -126,17 +126,17 @@ static int pbwt_reader_next(pbwt_reader_t *reader, int nshared)
 	return reader->mpos;
 }
 
-PBWT *pbwtMerge(const char **fnames, int nfiles)
+PBWT *PBWT::pbwtMerge(const char **fnames, int nfiles)
 {
 	pbwt_reader_t *reader = pbwt_reader_init(fnames, nfiles);
 
 	int nhaps = 0, i;
 	for (i=0; i<nfiles; i++) nhaps += reader->pbwt[i]->M;
-	PBWT *out_pbwt     = pbwtCreate(nhaps, 0);
-	PbwtCursor *cursor = pbwtNakedCursorCreate(nhaps, 0);
+	PBWT *out_pbwt     = PBWT::pbwtCreate(nhaps, 0);
+	PBWT::PbwtCursor *cursor = PBWT::pbwtNakedCursorCreate(nhaps, 0);
 	uchar *yseq        = myalloc(nhaps, uchar);
 	out_pbwt->yz       = arrayCreate (1<<20, uchar) ;
-	out_pbwt->sites    = arrayReCreate(out_pbwt->sites, reader->pbwt[0]->N, Site);
+	out_pbwt->sites    = arrayReCreate(out_pbwt->sites, reader->pbwt[0]->N, PBWT::Site);
 	out_pbwt->chrom = strdup(reader->pbwt[0]->chrom);
 
 	int pos, j;
@@ -146,12 +146,12 @@ PBWT *pbwtMerge(const char **fnames, int nfiles)
 		for (i=0; i<nfiles; i++)
 		{
 			PBWT *p		 = reader->pbwt[i];
-			Site *site = arrp(p->sites, reader->cpos[i], Site);
+			PBWT::Site *site = arrp(p->sites, reader->cpos[i], PBWT::Site);
 
 			// Both position and alleles must match. This requires that the records are sorted by alleles.
 
 			if ( site->x!=pos ) break;
-			char *als = dictName(variationDict, site->varD);
+			char *als = dictName(PBWT::variationDict, site->varD);
 			if ( strcmp(als,reader->mals) ) break;
 		}
 		if ( i!=nfiles ) 
@@ -160,14 +160,14 @@ PBWT *pbwtMerge(const char **fnames, int nfiles)
 			for (i=0; i<nfiles; i++)
 			{
 				PBWT *p    = reader->pbwt[i];
-				Site *site = arrp(p->sites, reader->cpos[i], Site);
+				PBWT::Site *site = arrp(p->sites, reader->cpos[i], PBWT::Site);
 				if ( site->x!=pos ) continue;
-				char *als = dictName(variationDict, site->varD);
+				char *als = dictName(PBWT::variationDict, site->varD);
 				if ( strcmp(als,reader->mals) ) continue;
 
-				PbwtCursor *c = reader->cursor[i];
-				reader->unpacked[i] += unpack3(arrp(p->yz,reader->unpacked[i],uchar), p->M, c->y, 0);
-				pbwtCursorForwardsA(c);
+				PBWT::PbwtCursor *c = reader->cursor[i];
+				reader->unpacked[i] += PBWT::unpack3(arrp(p->yz,reader->unpacked[i],uchar), p->M, c->y, 0);
+				PBWT::pbwtCursorForwardsA(c);
 			}
 			continue;
 		}
@@ -176,33 +176,33 @@ PBWT *pbwtMerge(const char **fnames, int nfiles)
 		int ihap = 0;
 		for (i=0; i<nfiles; i++)
 		{
-			PbwtCursor *c = reader->cursor[i];
+			PBWT::PbwtCursor *c = reader->cursor[i];
 			PBWT *p       = reader->pbwt[i];
-			Site *site    = arrp(p->sites, reader->cpos[i], Site);
-			reader->unpacked[i] += unpack3(arrp(p->yz,reader->unpacked[i],uchar), p->M, c->y, 0);
+			PBWT::Site *site    = arrp(p->sites, reader->cpos[i], PBWT::Site);
+			reader->unpacked[i] += PBWT::unpack3(arrp(p->yz,reader->unpacked[i],uchar), p->M, c->y, 0);
 			for (j=0; j<p->M; j++) yseq[ihap + c->a[j]] = c->y[j];
-			pbwtCursorForwardsA(c);
+			PBWT::pbwtCursorForwardsA(c);
 			ihap += p->M;
 		}
 
 		// pack merged haplotypes
 		for (j=0; j<nhaps; j++)
 			cursor->y[j] = yseq[cursor->a[j]];
-		pack3arrayAdd(cursor->y, out_pbwt->M, out_pbwt->yz);
-		pbwtCursorForwardsA(cursor);
+		PBWT::pack3arrayAdd(cursor->y, out_pbwt->M, out_pbwt->yz);
+		PBWT::pbwtCursorForwardsA(cursor);
 
 		// insert new site
 		arrayExtend(out_pbwt->sites, out_pbwt->N+1);
-		Site *site = arrayp(out_pbwt->sites, out_pbwt->N, Site);
+		PBWT::Site *site = arrayp(out_pbwt->sites, out_pbwt->N, PBWT::Site);
 		site->x = pos;
-		dictAdd(variationDict, reader->mals, &site->varD);
+		dictAdd(PBWT::variationDict, reader->mals, &site->varD);
 
 		out_pbwt->N++;
 	}
-	pbwtCursorToAFend (cursor, out_pbwt) ;
+	PBWT::pbwtCursorToAFend (cursor, out_pbwt) ;
 
 	free(yseq);
-	pbwtCursorDestroy(cursor);
+	PBWT::pbwtCursorDestroy(cursor);
 	pbwt_reader_destroy(reader);
 	return out_pbwt;
 }

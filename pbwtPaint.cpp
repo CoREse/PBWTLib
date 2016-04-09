@@ -53,7 +53,7 @@ static inline void printAll(int ii,int Ninds,
   gzprintf (fr,"IND%i %.2f\n",ii+1, nregions) ; 
 }
 
-void paintAncestryMatrix (PBWT *p, char* fileRoot,int chunksperregion)
+void PBWT::paintAncestryMatrix (PBWT *p, char* fileRoot,int chunksperregion)
 {
   int ploidy=2;
   int Ninds=p->M/ploidy;
@@ -169,7 +169,7 @@ void paintAncestryMatrix (PBWT *p, char* fileRoot,int chunksperregion)
   free (counts) ; free (counts2) ; free (counts3) ; free (totCounts) ; free (nregions); free(totlengths);
 }
 
-void paintAncestryMatrixSparse (PBWT *p, char* fileRoot,int chunksperregion,int cutoff)
+void PBWT::paintAncestryMatrixSparse (PBWT *p, char* fileRoot,int chunksperregion,int cutoff)
 {
   int i, j, k ;
   int ploidy=2;

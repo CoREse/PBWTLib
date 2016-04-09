@@ -22,13 +22,13 @@
 
 #include "pbwt.h"
 
-typedef struct {
+struct GeneticMap {
   char* chrom ;			/* chromosome name */
   Array x ;			/* of int - base pair coordinates */
   Array g ;			/* of double - genetic map position */
   int x0 ;			/* bounds of map in base pair coordinates */
   Array z ;			/* genetic map position every 100bp from x0 */
-} GeneticMap ;
+};
 
 static GeneticMap map ;
 
@@ -52,7 +52,7 @@ static void buildMap (void)
 
 /****************************/
 
-void readGeneticMap (FILE *fp)
+void PBWT::readGeneticMap (FILE *fp)
 {
   if (strcmp (fgetword (fp), "Chromosome") || 
       strcmp (fgetword (fp), "Position(bp)") ||
@@ -93,7 +93,7 @@ void readGeneticMap (FILE *fp)
 
 /*****************************************/
 
-double geneticMap (int x)
+double PBWT::geneticMap (int x)
 {
   x -= map.x0 ;
   if (x <= 0) return 0.0 ;
@@ -105,11 +105,11 @@ double geneticMap (int x)
 
 /*****************************************/
 
-typedef struct { 
+struct Hap4Stats { 
   int lastPat[20], lastPos[20] ;
   double lastMap[20], glen[20] ;
   long nMinus[20], nPlus[20], len[20] ; 
-} Hap4Stats ;
+};
 static Hap4Stats *stats ;
 
 static double rateBoundary[20] = {
@@ -141,15 +141,15 @@ static void finalReport (void)
 { 
   int v, i ;
   printf (" rate\tvar\t\tlen\tglen\tminus\t\tplus\n") ;
-  for (v = 0 ; v < dictMax(variationDict) ; ++v)
+  for (v = 0 ; v < dictMax(PBWT::variationDict) ; ++v)
     for (i = 0 ; i < 20 ; ++i)
       if (stats[v].nMinus[i] + stats[v].nPlus[i])
 	printf ("%.2f\t%s\t%12ld\t%.4g\t%12ld\t%12ld\n", rateBoundary[i],
-		dictName (variationDict, v), stats[v].len[i], stats[v].glen[i],
+		dictName (PBWT::variationDict, v), stats[v].len[i], stats[v].glen[i],
 		stats[v].nMinus[i], stats[v].nPlus[i]) ;
 }
 
-void pbwt4hapsStats (PBWT *p)
+void PBWT::pbwt4hapsStats (PBWT *p)
 {
   if (!p || !p->sites) die ("hap4stats called without a PBWT with sites") ;
   if (!map.x)
@@ -166,11 +166,11 @@ void pbwt4hapsStats (PBWT *p)
   else if (strcmp (p->chrom, map.chrom)) 
     warn ("chrom mismatch in hap4stats: %s != %s", p->chrom, map.chrom) ;
 
-  stats = mycalloc (dictMax(variationDict), Hap4Stats) ;
+  stats = mycalloc (dictMax(PBWT::variationDict), Hap4Stats) ;
 
   int i, k ;
   int v ; 
-  for (v = dictMax(variationDict) ; v-- ; ) 
+  for (v = dictMax(PBWT::variationDict) ; v-- ; ) 
     for (i = 0 ; i < p->M ; ++i) stats[v].lastPat[i] = -1 ;
   uchar *x = myalloc (p->M, uchar) ;
   

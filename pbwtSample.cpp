@@ -21,7 +21,7 @@ static Array samples ;
 
 /* functions */
 
-void sampleInit (void)
+void PBWT::sampleInit (void)
 {
   sampleDict = dictCreate (4096) ;
   populationDict = dictCreate (64) ;
@@ -29,14 +29,14 @@ void sampleInit (void)
   array(samples,0,Sample).nameD = 0 ; /* so that all read samples are non-zero */
 }
 
-void sampleDestroy (void)
+void PBWT::sampleDestroy (void)
 {
   if (sampleDict) dictDestroy(sampleDict);
   if (populationDict) dictDestroy(populationDict);
   if (samples) arrayDestroy(samples);
 }
 
-int sampleAdd (char *name, char *father, char *mother, char *pop)
+int PBWT::sampleAdd (char *name, char *father, char *mother, char *pop)
 {
   int k ;
   if (dictAdd (sampleDict, name, &k))
@@ -44,7 +44,7 @@ int sampleAdd (char *name, char *father, char *mother, char *pop)
   return k ;
 }
 
-Sample *sample (PBWT *p, int i) 
+PBWT::Sample *PBWT::sample (PBWT *p, int i) 
 {
   i = arr(p->samples, i, int) ;
   if (i >= arrayMax(samples))
@@ -52,11 +52,11 @@ Sample *sample (PBWT *p, int i)
   return arrp(samples,i,Sample) ;
 }
 
-char* sampleName (Sample *s) { return dictName (sampleDict, s->nameD) ; }
+char* PBWT::sampleName (Sample *s) { return dictName (sampleDict, s->nameD) ; }
 
-char* popName (Sample *s) { return dictName (populationDict, s->popD) ; }
+char* PBWT::popName (Sample *s) { return dictName (populationDict, s->popD) ; }
 
-PBWT *pbwtSubSample (PBWT *pOld, Array select)
+PBWT *PBWT::pbwtSubSample (PBWT *pOld, Array select)
 /* select[i] is the position in old of the i'th position in new */
 {
   if (!pOld || !pOld->yz) die ("subSample called without valid pbwt") ;
@@ -92,7 +92,7 @@ PBWT *pbwtSubSample (PBWT *pOld, Array select)
   return pNew ;
 }
 
-PBWT *pbwtSubSampleInterval (PBWT *pOld, int start, int Mnew)
+PBWT *PBWT::pbwtSubSampleInterval (PBWT *pOld, int start, int Mnew)
 {
   if (start < 0 || Mnew <= 0 || start + Mnew > pOld->M)
     die ("bad start %d, Mnew %d in subsample", start, Mnew) ;
@@ -107,7 +107,7 @@ PBWT *pbwtSubSampleInterval (PBWT *pOld, int start, int Mnew)
   return pNew ;
 }
 
-PBWT *pbwtSelectSamples (PBWT *pOld, FILE *fp)
+PBWT *PBWT::pbwtSelectSamples (PBWT *pOld, FILE *fp)
 {
   if (!pOld || !pOld->samples) die ("pbwtSelectSamples called without pre-existing sample names") ;
   int i, j ;

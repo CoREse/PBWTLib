@@ -32,7 +32,7 @@ static void genotypeComparePbwt (PBWT *p, PBWT *q) ; /* forward declaration */
 
 static double fBound[] = {0.1, 0.2, 0.3, 0.5, 0.7, 1, 2, 3, 5, 7, 10, 20, 30, 50, 70, 90, 100.01} ;
 
-void imputeExplore (PBWT *p, int test)
+void PBWT::imputeExplore (PBWT *p, int test)
 {
   int i, j, k, M = p->M, N = p->N, ff ;
   uchar *y ;
@@ -166,8 +166,8 @@ static void phaseCompare (PBWT *p, PBWT *q)
 {
   int i, k ;
   int M = p->M, N = p->N ;
-  PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
-  PbwtCursor *uq = pbwtCursorCreate (q, TRUE, TRUE) ;
+  PBWT::PbwtCursor *up = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *uq = PBWT::pbwtCursorCreate (q, TRUE, TRUE) ;
   int *xp = myalloc (M, int), *xq = myalloc (M, int) ;
   int *isFirst = myalloc (M, int), *isFlipped = myalloc (M, int) ;
   int *lastFlip = mycalloc (M, int), *kHet = mycalloc (M, int) ;
@@ -199,45 +199,45 @@ static void phaseCompare (PBWT *p, PBWT *q)
 		  lastFlip[i] = kHet[i] ;
 		}
 	    }
-	  if (isCheck && (xp[i]+xp[i+1] != xq[i]+xq[i+1])) 
-	    { fprintf (logFile, "phaseCompare mismatch k %d sequence %d\np", k, i) ;
-	      uchar **pHaps = pbwtHaplotypes(p), **qHaps = pbwtHaplotypes(q) ;
+	  if (PBWT::isCheck && (xp[i]+xp[i+1] != xq[i]+xq[i+1])) 
+	    { fprintf (PBWT::logFile, "phaseCompare mismatch k %d sequence %d\np", k, i) ;
+	      uchar **pHaps = PBWT::pbwtHaplotypes(p), **qHaps = PBWT::pbwtHaplotypes(q) ;
 	      int kk ; 
 	      for (kk = 0 ; kk < 40 ; ++kk) 
-		fprintf (logFile, " %d", pHaps[i][kk] + pHaps[i+1][kk]) ;
-	      fprintf (logFile, "\nq") ;
+		fprintf (PBWT::logFile, " %d", pHaps[i][kk] + pHaps[i+1][kk]) ;
+	      fprintf (PBWT::logFile, "\nq") ;
 	      for (kk = 0 ; kk < 40 ; ++kk) 
-		fprintf (logFile, " %d", qHaps[i][kk] + qHaps[i+1][kk]) ;
-	      fprintf (logFile, "\n") ;
+		fprintf (PBWT::logFile, " %d", qHaps[i][kk] + qHaps[i+1][kk]) ;
+	      fprintf (PBWT::logFile, "\n") ;
 	      die ("phaseCompare mismatch: k %d, i %d, xp %d|%d, xq %d|%d", 
 		   k, i, xp[i], xp[i+1], xq[i], xq[i+1]) ;
 	    }
 	}
-      pbwtCursorForwardsRead (up) ;
-      pbwtCursorForwardsRead (uq) ;
+      PBWT::pbwtCursorForwardsRead (up) ;
+      PBWT::pbwtCursorForwardsRead (uq) ;
     }
 
-  fprintf (logFile, "%.1f switches per sample, %.3f per het, %.1f nSwitch1, %.1f nSwitch5\n", 
+  fprintf (PBWT::logFile, "%.1f switches per sample, %.3f per het, %.1f nSwitch1, %.1f nSwitch5\n", 
 	   mFac*nSwitch, nSwitch/(double)nHet, mFac*nSwitch1, mFac*nSwitch5) ;
 
-  if (isStats)
+  if (PBWT::isStats)
     { for (i = 0 ; i < M/2 ; ++i)
 	{ printf ("SAMPLE-SWITCH\t%d\t%d", i, nSwitchSample[i]) ;
 	  if (p->samples)
-	    printf ("\t%s", sampleName(sample (p, 2*i))) ;
+	    printf ("\t%s", PBWT::sampleName(PBWT::sample (p, 2*i))) ;
 	  putchar ('\n') ;
 	}
       for (k = 0 ; k < N ; ++k)	
 	{ printf ("SITE-SWITCH\t%d\t%d", k, nSwitchSite[k]) ;
 	  if (p->sites)
-	    { Site *s = arrp(p->sites,k,Site) ;
-	      printf ("\t%s\t%d\t%s", p->chrom, s->x, dictName(variationDict, s->varD)) ;
+	    { PBWT::Site *s = arrp(p->sites,k,PBWT::Site) ;
+	      printf ("\t%s\t%d\t%s", p->chrom, s->x, dictName(PBWT::variationDict, s->varD)) ;
 	    }
 	  putchar ('\n') ;
 	}
     }
 
-  pbwtCursorDestroy (up) ; pbwtCursorDestroy (uq) ;
+  PBWT::pbwtCursorDestroy (up) ; PBWT::pbwtCursorDestroy (uq) ;
   free (xp) ; free (xq) ; free (isFirst) ; free (isFlipped) ; 
   free (nSwitchSample) ;  free (nSwitchSite) ;
 }
@@ -257,7 +257,7 @@ static void phaseInit (int N)
     { z = exp (-i * 0.0001) ; logisticCache[i] = 1.0 / (1.0 + z) ; }
 }
 
-static inline double score0 (PbwtCursor *u, double *xp, int i)
+static inline double score0 (PBWT::PbwtCursor *u, double *xp, int i)
 {
   double s = 0.0 ;
   int ubi = u->b[i] ;
@@ -266,7 +266,7 @@ static inline double score0 (PbwtCursor *u, double *xp, int i)
   return s ;
 }
 
-static inline double score1 (PbwtCursor *u, double *xp, int i, int k)
+static inline double score1 (PBWT::PbwtCursor *u, double *xp, int i, int k)
 {
   double s = 0 ;
   int ubi = u->b[i] ;
@@ -293,21 +293,21 @@ PBWT *phaseSweep (PBWT *p, PBWT *ref, BOOL isStart, PBWT *r, int nSparse)
   if (ref && p->M > ref->M) die ("phaseSweep requires ref->M >= p->M") ;
 
   /* initialisation */
-  PbwtCursor *up = pbwtCursorCreate (p, TRUE, isStart) ;
-  PBWT *q = pbwtCreate (M, N) ; /* CNew pbwt */
-  PbwtCursor *ur, *uref ;
-  if (ref) uref = pbwtCursorCreate (ref, TRUE, isStart) ; 
+  PBWT::PbwtCursor *up = PBWT::pbwtCursorCreate (p, TRUE, isStart) ;
+  PBWT *q = PBWT::pbwtCreate (M, N) ; /* CNew pbwt */
+  PBWT::PbwtCursor *ur, *uref ;
+  if (ref) uref = PBWT::pbwtCursorCreate (ref, TRUE, isStart) ; 
   if (r) 
-    { ur = pbwtCursorCreate (r, TRUE, FALSE) ;
+    { ur = PBWT::pbwtCursorCreate (r, TRUE, FALSE) ;
       memcpy (ur->b, r->aRend, M*sizeof(int)) ; /* recover stored locations */
       // for (i = 0 ; i < M ; ++i) ur->b[ur->a[i]] = i ; /* store inverse a in b */
       memcpy (q->aFstart, r->aFend, M*sizeof(int)) ; /* prime uq with final ur */
     }
-  PbwtCursor *uq = pbwtCursorCreate (q, TRUE, TRUE) ; 
+  PBWT::PbwtCursor *uq = PBWT::pbwtCursorCreate (q, TRUE, TRUE) ; 
   for (i = 0 ; i < M ; ++i) uq->b[uq->a[i]] = i ; /* store inverse a in b */
-  PbwtCursor **uqq = myalloc (nSparse, PbwtCursor*) ;
+  PBWT::PbwtCursor **uqq = myalloc (nSparse, PBWT::PbwtCursor*) ;
   for (kk = 0 ; kk < nSparse ; ++kk)
-    { uqq[kk] = pbwtNakedCursorCreate (M, 0) ; 
+    { uqq[kk] = PBWT::pbwtNakedCursorCreate (M, 0) ; 
       for (i = 0 ; i < M ; ++i) uqq[kk]->b[uqq[kk]->a[i]] = i ;
     }
 
@@ -315,9 +315,9 @@ PBWT *phaseSweep (PBWT *p, PBWT *ref, BOOL isStart, PBWT *r, int nSparse)
   uchar  *x = myalloc (M, uchar) ;  /* actual haplotypes in original order, from p */
   double *xp = myalloc(M, double) ; /* 2*p(x=1)-1, so 1 if x=1, -1 if x=0, 0 if unknown */
   for (k = 0 ; k < N ; k++)
-    { if (!isStart) pbwtCursorReadBackwards (up) ;
+    { if (!isStart) PBWT::pbwtCursorReadBackwards (up) ;
       for (i = 0 ; i < M ; ++i) x[up->a[i]] = up->y[i] ;  /* build x from up->y */
-      if (isStart) pbwtCursorForwardsRead (up) ; 
+      if (isStart) PBWT::pbwtCursorForwardsRead (up) ; 
       for (i = 0 ; i < M ; ++i) xp[i] = x[i] ? 1.0 : -1.0 ;
       int n2 = 0 ;
       for (i = 0 ; i < M ; i += 2) /* go through x in pairs */
@@ -349,29 +349,29 @@ PBWT *phaseSweep (PBWT *p, PBWT *ref, BOOL isStart, PBWT *r, int nSparse)
 
       for (i = 0 ; i < M ; ++i)	x[i] = (xp[i] > 0.0) ? 1 : 0 ;
       for (i = 0 ; i < M ; ++i)	uq->y[i] = x[uq->a[i]] ;
-      pbwtCursorWriteForwardsAD (uq, k) ; 
+      PBWT::pbwtCursorWriteForwardsAD (uq, k) ; 
       for (i = 0 ; i < M ; ++i) uq->b[uq->a[i]] = i ;
       kk = k % nSparse ;	/* which of the sparse pbwts to update this time */
       for (i = 0 ; i < M ; ++i) uqq[kk]->y[i] = x[uqq[kk]->a[i]] ;
-      pbwtCursorForwardsAD (uqq[kk], k/nSparse) ; 
+      PBWT::pbwtCursorForwardsAD (uqq[kk], k/nSparse) ; 
       for (i = 0 ; i < M ; ++i) uqq[kk]->b[uqq[kk]->a[i]] = i ;
       if (r) 
-	{ pbwtCursorReadBackwards (ur) ; 
+	{ PBWT::pbwtCursorReadBackwards (ur) ; 
 	  for (i = 0 ; i < M ; ++i) ur->b[ur->a[i]] = i ;
 	}
     }
-  pbwtCursorToAFend (uq, q) ;
+  PBWT::pbwtCursorToAFend (uq, q) ;
   /* cache uq->b in aRend so we can retrieve from reverse on forwards pass */
   q->aRend = myalloc (q->M, int) ; 
   for (i = 0 ; i < q->M ; ++i) q->aRend[i] = uq->b[i] ;
   /* clean up memory allocated */
   free (x) ; free (xp) ;
-  pbwtCursorDestroy (up) ; pbwtCursorDestroy (uq) ; if (r) pbwtCursorDestroy (ur) ;
-  for (kk = 0 ; kk < nSparse ; ++kk) pbwtCursorDestroy (uqq[kk]) ; free (uqq) ;
+  PBWT::pbwtCursorDestroy (up) ; PBWT::pbwtCursorDestroy (uq) ; if (r) PBWT::pbwtCursorDestroy (ur) ;
+  for (kk = 0 ; kk < nSparse ; ++kk) PBWT::pbwtCursorDestroy (uqq[kk]) ; free (uqq) ;
   return q ;
 }
 
-PBWT *phase (PBWT *p, int nSparse) /* return rephased p */
+PBWT *PBWT::phase (PBWT *p, int nSparse) /* return rephased p */
 {
   if (p->M % 2) die ("phase requires that M = %d is even", p->M) ;
   if (nSparse < 2) nSparse = 2 ;
@@ -401,14 +401,14 @@ PBWT *referencePhase0 (PBWT *p, PBWT *pRef)
 {
   int nSparse = 2 ;
   phaseInit (pRef->N) ;
-  if (!pRef->aFend) pbwtBuildReverse (pRef) ; /* needed for oldPBWT format data */
+  if (!pRef->aFend) PBWT::pbwtBuildReverse (pRef) ; /* needed for oldPBWT format data */
 
   PBWT *r = phaseSweep (p, pRef, FALSE, 0, 2) ; /* always reverse with nSparse 2 */
-  if (isCheck)		/* flip p->zz round into p->yz and compare to r */
-    { if (!p->zz) pbwtBuildReverse (p) ;
+  if (PBWT::isCheck)		/* flip p->zz round into p->yz and compare to r */
+    { if (!p->zz) PBWT::pbwtBuildReverse (p) ;
       Array yzStore = p->yz ; p->yz = p->zz ;
       int *aFstartStore = p->aFstart ; p->aFstart = p->aRstart ;
-      fprintf (logFile, "After reverse pass: ") ; phaseCompare (p, r) ;
+      fprintf (PBWT::logFile, "After reverse pass: ") ; phaseCompare (p, r) ;
       p->yz = yzStore ; p->aFstart = aFstartStore ;
     }
   PBWT *q = phaseSweep (p, pRef, TRUE, r, nSparse) ;
@@ -486,7 +486,7 @@ typedef struct {
  TraceBackIndex traceBackCreate (TraceBackIndex back, unsigned int value, int j, int k)
  { TraceBackIndex tb ;
    TraceBackCell *tc ;
-   if (!isCheck && arrayMax (traceBackFreeStack)) 
+   if (!PBWT::isCheck && arrayMax (traceBackFreeStack)) 
      { tb = arr (traceBackFreeStack, --arrayMax(traceBackFreeStack), TraceBackIndex) ;
        tc = arrp (traceBackHeap, tb, TraceBackCell) ;
      }
@@ -656,12 +656,12 @@ static int phaseExtend (int x0, int x1, PbwtCursor *uRef, int j0,
 /* so replace with CNew phaseExtend() below, I hope */
 {
   PhaseCell *old = &pcOld[j0] ;
-  PhaseCell *CNew = &pcNew[pbwtCursorMap (uRef, x0, j0)] ;
-  int j1New = pbwtCursorMap (uRef, x1, old->j1) ;
+  PhaseCell *CNew = &pcNew[PBWT::pbwtCursorMap (uRef, x0, j0)] ;
+  int j1New = PBWT::pbwtCursorMap (uRef, x1, old->j1) ;
   double sBit = old->s * extendScore (j0, x0) * extendScore (old->j1, x1) ;
-  if (isCheck && k == 51 && (j0 == 1389 || pbwtCursorMap(uRef,x0,j0) == 1370))
+  if (isCheck && k == 51 && (j0 == 1389 || PBWT::pbwtCursorMap(uRef,x0,j0) == 1370))
     printf ("at k %d extend j0 %d j1 %d s %.3g with x %d %d to j0New %d j1New %d sbit %.3g\n",
-	    k, j0, old->j1, old->s, x0, x1, pbwtCursorMap (uRef, x0, j0), j1New, sBit) ;
+	    k, j0, old->j1, old->s, x0, x1, PBWT::pbwtCursorMap (uRef, x0, j0), j1New, sBit) ;
   if (!CNew->s)		/* this is the first j to map here */
     { CNew->s = sBit ; CNew->sBest = sBit ;
       CNew->j1 = j1New ;
@@ -698,18 +698,18 @@ static inline int phaseExtend (int x0, int x1, PbwtCursor *uRef, int j0,
 /* returns the number of CNew back pointers created */
 {
   PhaseCell *old = &pcOld[j0] ;
-  int j0New = pbwtCursorMap (uRef, x0, j0) ;
+  int j0New = PBWT::pbwtCursorMap (uRef, x0, j0) ;
   PhaseCell *CNew = &pcNew[j0New] ;
   if (CNew->s && CNew->s > old->s) return 0 ; /* quick check whether this is possible */
   PhaseCell temp ;
   temp.s = old->s ;
-  temp.dplus0 = pbwtCursorMapDplus (uRef, x0, j0, old->dplus0) ;
-  temp.dminus0 = pbwtCursorMapDminus (uRef, x0, j0, old->dminus0) ;
+  temp.dplus0 = PBWT::pbwtCursorMapDplus (uRef, x0, j0, old->dplus0) ;
+  temp.dminus0 = PBWT::pbwtCursorMapDminus (uRef, x0, j0, old->dminus0) ;
   if (temp.dplus0 > old->dmax0 && temp.dminus0 > old->dmax0) /* need a recombination */
     { --temp.s ; temp.dmax0 = k ; } else temp.dmax0 = old->dmax0 ;
-  temp.j1 = pbwtCursorMap (uRef, x1, old->j1) ;
-  temp.dplus1 = pbwtCursorMapDplus (uRef, x1, old->j1, old->dplus1) ;
-  temp.dminus1 = pbwtCursorMapDminus (uRef, x1, old->j1, old->dminus1) ;
+  temp.j1 = PBWT::pbwtCursorMap (uRef, x1, old->j1) ;
+  temp.dplus1 = PBWT::pbwtCursorMapDplus (uRef, x1, old->j1, old->dplus1) ;
+  temp.dminus1 = PBWT::pbwtCursorMapDminus (uRef, x1, old->j1, old->dminus1) ;
   if (temp.dplus1 > old->dmax1 && temp.dminus1 > old->dmax1) /* need a recombination */
     { --temp.s ; temp.dmax1 = k ; } else temp.dmax1 = old->dmax1 ;
 
@@ -745,18 +745,18 @@ static inline int phaseExtend (int x0, int x1, PbwtCursor *uRef, int j0,
 /* returns the number of CNew back pointers created */
 {
   PhaseCell *old = &pcOld[j0] ;
-  int j0New = pbwtCursorMap (uRef, x0, j0) ;
+  int j0New = PBWT::pbwtCursorMap (uRef, x0, j0) ;
   PhaseCell *CNew = &pcNew[j0New] ;
   if (CNew->s && CNew->s > old->s) return 0 ; /* quick check whether this is possible */
   PhaseCell temp ;
   temp.s = old->s ;
-  temp.j0min = pbwtCursorMap (uRef, x0, old->j0min) ;
-  temp.j0max = pbwtCursorMap (uRef, x0, old->j0max) ;
+  temp.j0min = PBWT::pbwtCursorMap (uRef, x0, old->j0min) ;
+  temp.j0max = PBWT::pbwtCursorMap (uRef, x0, old->j0max) ;
   if (temp.j0min == temp.j0max) /* need a recombination */
     { --temp.s ; temp.j0min = x0 ? uRef->c-1 : 0 ; temp.j0max = x0 ? uRef->M : uRef->c ; }
-  temp.j1 = pbwtCursorMap (uRef, x1, old->j1) ;
-  temp.j1min = pbwtCursorMap (uRef, x1, old->j1min) ;
-  temp.j1max = pbwtCursorMap (uRef, x1, old->j1max) ;
+  temp.j1 = PBWT::pbwtCursorMap (uRef, x1, old->j1) ;
+  temp.j1min = PBWT::pbwtCursorMap (uRef, x1, old->j1min) ;
+  temp.j1max = PBWT::pbwtCursorMap (uRef, x1, old->j1max) ;
   if (temp.j1min == temp.j1max) /* need a recombination */
     { --temp.s ; temp.j1min = x1 ? uRef->c-1 : 0 ; temp.j1max = x1 ? uRef->M : uRef->c ; }
 
@@ -792,12 +792,12 @@ static inline int phaseExtend (int x0, int x1, PbwtCursor *uRef, int j0,
 /* returns the number of CNew back pointers created */
 {
   PhaseCell *old = &pcOld[j0] ;
-  int j0New = pbwtCursorMap (uRef, x0, j0) ;
+  int j0New = PBWT::pbwtCursorMap (uRef, x0, j0) ;
   PhaseCell *CNew = &pcNew[j0New] ;
   PhaseCell temp ;	/* build the potential CNew in this  */
   temp.s = old->s ;
-  temp.dplus0 = pbwtCursorMapDplus (uRef, x0, j0, old->dplus0) ;
-  temp.dminus0 = pbwtCursorMapDminus (uRef, x0, j0, old->dminus0) ;
+  temp.dplus0 = PBWT::pbwtCursorMapDplus (uRef, x0, j0, old->dplus0) ;
+  temp.dminus0 = PBWT::pbwtCursorMapDminus (uRef, x0, j0, old->dminus0) ;
   int j ;
   if (old->dplus0 < old->dminus0 && old->dplus0 < temp.dplus0)
     for (j = j0 ; j < uRef->M ; )
@@ -810,9 +810,9 @@ static inline int phaseExtend (int x0, int x1, PbwtCursor *uRef, int j0,
 	if (uRef->d[--j] > old->dminus0) break ;
       }
 
-  temp.j1 = pbwtCursorMap (uRef, x1, old->j1) ;
-  temp.dplus1 = pbwtCursorMapDplus (uRef, x1, old->j1, old->dplus1) ;
-  temp.dminus1 = pbwtCursorMapDminus (uRef, x1, old->j1, old->dminus1) ;
+  temp.j1 = PBWT::pbwtCursorMap (uRef, x1, old->j1) ;
+  temp.dplus1 = PBWT::pbwtCursorMapDplus (uRef, x1, old->j1, old->dplus1) ;
+  temp.dminus1 = PBWT::pbwtCursorMapDminus (uRef, x1, old->j1, old->dminus1) ;
   if (old->dplus1 < old->dminus1 && old->dplus1 < temp.dplus1)
     for (j = j0 ; j < uRef->M ; )
       { temp.s += (k - old->dplus1) ;
@@ -849,19 +849,19 @@ static inline int phaseExtend (int x0, int x1, PbwtCursor *uRef, int j0,
 /* in this version pc->s is -1 - sum of lengths of mismatched neighbours */
 static char *extendMethodText = "EXTEND4" ;
 
-static void extendPrepare (PbwtCursor *u, int k) {} 
+static void extendPrepare (PBWT::PbwtCursor *u, int k) {} 
 
-static inline int phaseExtend (int x0, int x1, PbwtCursor *uRef, int j0,
+static inline int phaseExtend (int x0, int x1, PBWT::PbwtCursor *uRef, int j0,
 			       PhaseCell *pcOld, PhaseCell *pcNew, int k) 
 /* returns the number of CNew back pointers created */
 {
   PhaseCell *old = &pcOld[j0] ;
-  int j0New = pbwtCursorMap (uRef, x0, j0) ;
+  int j0New = PBWT::pbwtCursorMap (uRef, x0, j0) ;
   PhaseCell *CNew = &pcNew[j0New] ;
   PhaseCell temp ;	/* build the potential CNew in this  */
   temp.s = old->s ;
-  temp.dplus0 = pbwtCursorMapDplus (uRef, x0, j0, old->dplus0) ;
-  temp.dminus0 = pbwtCursorMapDminus (uRef, x0, j0, old->dminus0) ;
+  temp.dplus0 = PBWT::pbwtCursorMapDplus (uRef, x0, j0, old->dplus0) ;
+  temp.dminus0 = PBWT::pbwtCursorMapDminus (uRef, x0, j0, old->dminus0) ;
   float dS = 0 ;
   if (j0) 
     { if (x0 == uRef->y[j0-1]) dS += (k-old->dminus0) ; else dS -= (k-old->dminus0) ; }
@@ -869,9 +869,9 @@ static inline int phaseExtend (int x0, int x1, PbwtCursor *uRef, int j0,
     { if (x0 == uRef->y[j0]) dS += (k-old->dplus0) ; else dS -= (k-old->dplus0) ; }
   if (dS < 0) temp.s += dS ;
 
-  temp.j1 = pbwtCursorMap (uRef, x1, old->j1) ;
-  temp.dplus1 = pbwtCursorMapDplus (uRef, x1, old->j1, old->dplus1) ;
-  temp.dminus1 = pbwtCursorMapDminus (uRef, x1, old->j1, old->dminus1) ;
+  temp.j1 = PBWT::pbwtCursorMap (uRef, x1, old->j1) ;
+  temp.dplus1 = PBWT::pbwtCursorMapDplus (uRef, x1, old->j1, old->dplus1) ;
+  temp.dminus1 = PBWT::pbwtCursorMapDminus (uRef, x1, old->j1, old->dminus1) ;
   dS = 0 ;
   if (old->j1) 
     { if (x1 == uRef->y[old->j1-1]) dS += (k-old->dminus1) ; else dS -= (k-old->dminus1) ; }
@@ -904,11 +904,11 @@ static inline int phaseExtend (int x0, int x1, PbwtCursor *uRef, int j0,
 
 static PBWT *referencePhase4 (PBWT *pOld, PBWT *pRef)
 {
-  fprintf (logFile, "Reference phase with extension method %s\n", extendMethodText) ;
+  fprintf (PBWT::logFile, "Reference phase with extension method %s\n", extendMethodText) ;
   int i, j, jq, k ;
-  PbwtCursor *uOld = pbwtCursorCreate (pOld, TRUE, TRUE) ;
+  PBWT::PbwtCursor *uOld = PBWT::pbwtCursorCreate (pOld, TRUE, TRUE) ;
   uchar *xOld = myalloc (pOld->M, uchar) ;
-  PbwtCursor *uRef = pbwtCursorCreate (pRef, TRUE, TRUE) ;
+  PBWT::PbwtCursor *uRef = PBWT::pbwtCursorCreate (pRef, TRUE, TRUE) ;
   traceBackInitialise() ;
   PhaseCell **pcOld = myalloc (pOld->M, PhaseCell*) ;
   PhaseCell **pcNew = myalloc (pOld->M, PhaseCell*) ;
@@ -951,13 +951,13 @@ static PBWT *referencePhase4 (PBWT *pOld, PBWT *pRef)
 	  putchar ('\n') ; 
 	}
 #endif
-      if (isCheck && !(k % 100)) 
+      if (PBWT::isCheck && !(k % 100)) 
 	{ printf ("check k %d", k) ; int nS = 0 ; PhaseCell *pc ;
 	  for (j = 0, pc = pcOld[0] ; j < pRef->M ; ++j, ++pc) if (pc->s) ++nS ;
 	  printf (" nS %d\n", nS) ;
 	}
       extendPrepare (uRef, k) ;
-      pbwtCursorCalculateU (uRef) ; /* before pbwtCursorMap()s in phaseExtend() */
+      PBWT::pbwtCursorCalculateU (uRef) ; /* before PBWT::pbwtCursorMap()s in phaseExtend() */
       /* update each query sample in turn */
       for (jq = 0 ; jq < pOld->M ; jq +=2)
 	{ bzero (pcNew[jq], (pRef->M+1)*sizeof(PhaseCell)) ; /* clear pcNew */
@@ -998,14 +998,14 @@ static PBWT *referencePhase4 (PBWT *pOld, PBWT *pRef)
       for (j = 0 ; j <= pRef->M ; ++j) printf (" %6d", pcOld[0][j].j1) ; putchar ('\n') ;
 #endif
 
-      pbwtCursorForwardsRead (uOld) ;
-      pbwtCursorForwardsReadAD (uRef, k) ;
+      PBWT::pbwtCursorForwardsRead (uOld) ;
+      PBWT::pbwtCursorForwardsReadAD (uRef, k) ;
     }
 
-  fprintf (logFile, "traceBackHeap final %ld, max %ld\n", 
+  fprintf (PBWT::logFile, "traceBackHeap final %ld, max %ld\n", 
 	   arrayMax(traceBackHeap)-arrayMax(traceBackFreeStack), arrayMax(traceBackHeap)) ;
 
-  /* now do the traceback - we write first into the reverse pbwt for pNew */
+  /* now do the traceback - we write first into the reverse PBWT::pbwt for pNew */
   /* first find highest score in last column, to start at */
   TraceBackIndex *tb = myalloc (pOld->M, TraceBackIndex) ;
   for (jq = 0 ; jq < pOld->M ; jq += 2)
@@ -1015,12 +1015,12 @@ static PBWT *referencePhase4 (PBWT *pOld, PBWT *pRef)
       tb[jq] = pcOld[jq][jMax].back ;
     }
   /* now trace back from there, building pNew backwards */
-  PBWT *pNew = pbwtCreate (pOld->M, pOld->N) ; /* need to initialist aRstart */
+  PBWT *pNew = PBWT::pbwtCreate (pOld->M, pOld->N) ; /* need to initialist aRstart */
   pNew->aRstart = myalloc (pNew->M, int) ; for (j=0 ; j < pNew->M ; ++j) pNew->aRstart[j] = j ;
-  PbwtCursor *uNewR = pbwtCursorCreate (pNew, FALSE, TRUE) ;
+  PBWT::PbwtCursor *uNewR = PBWT::pbwtCursorCreate (pNew, FALSE, TRUE) ;
   uchar *xNew = myalloc (pNew->M, uchar) ;
   for (k = pOld->N ; k-- ; )
-    { pbwtCursorReadBackwards (uOld) ;
+    { PBWT::pbwtCursorReadBackwards (uOld) ;
       for (j = 0 ; j < pOld->M ; ++j) xOld[uOld->a[j]] = uOld->y[j] ;
       for (jq = 0 ; jq < pOld->M ; jq += 2)
 	if (xOld[jq] == xOld[jq+1])
@@ -1038,31 +1038,31 @@ static PBWT *referencePhase4 (PBWT *pOld, PBWT *pRef)
 	    tb[jq] = tc->back ;
 	  }
       for (j = 0 ; j < pNew->M ; ++j) uNewR->y[j] = xNew[uNewR->a[j]] ;
-      pbwtCursorWriteForwards (uNewR) ;
+      PBWT::pbwtCursorWriteForwards (uNewR) ;
     }
   for (jq = 0 ; jq < pOld->M ; jq += 2) if (tb[jq]) die ("trace back incomplete jq %d", jq) ;
   /* copy final sort order into pNew->aRend and ->aFstart */
   pNew->aRend = myalloc (pNew->M, int) ; memcpy (pNew->aRend, uNewR->a, pNew->M*sizeof(int)) ;
   memcpy (pNew->aFstart, uNewR->a, pNew->M * sizeof(int)) ;
-  /* finally make the forwards pbwt for pNew */
-  PbwtCursor *uNewF = pbwtCursorCreate (pNew, TRUE, TRUE) ;
+  /* finally make the forwards PBWT::pbwt for pNew */
+  PBWT::PbwtCursor *uNewF = PBWT::pbwtCursorCreate (pNew, TRUE, TRUE) ;
   for (k = 0 ; k < pOld->N ; k++)
-    { pbwtCursorReadBackwards (uNewR) ;
+    { PBWT::pbwtCursorReadBackwards (uNewR) ;
       for (j = 0 ; j < pNew->M ; ++j) xOld[uNewR->a[j]] = uNewR->y[j] ;
       for (j = 0 ; j < pNew->M ; ++j) uNewF->y[j] = xOld[uNewF->a[j]] ;
-      pbwtCursorWriteForwards (uNewF) ;
+      PBWT::pbwtCursorWriteForwards (uNewF) ;
     }
   pNew->aFend = myalloc (pNew->M, int) ; memcpy (pNew->aFend, uNewF->a, pNew->M*sizeof(int)) ;
 
   /* reporting */
-  if (isCheck)
+  if (PBWT::isCheck)
     for (jq = 0 ; jq < pOld->M ; jq +=2 )
-      fprintf (logFile, "jq %d, nHets %d, liveAv %.2f, likeAv %.2f\n", jq, 
+      fprintf (PBWT::logFile, "jq %d, nHets %d, liveAv %.2f, likeAv %.2f\n", jq, 
 	       checkHets[jq], checkLiveSum[jq]/(double)pRef->N, exp(checkLikeSum[jq]/pRef->N)) ;
 
   /* cleanup */
-  pbwtCursorDestroy (uRef) ; pbwtCursorDestroy (uOld) ;
-  pbwtCursorDestroy (uNewF) ; pbwtCursorDestroy (uNewR) ;
+  PBWT::pbwtCursorDestroy (uRef) ; PBWT::pbwtCursorDestroy (uOld) ;
+  PBWT::pbwtCursorDestroy (uNewF) ; PBWT::pbwtCursorDestroy (uNewR) ;
   for (jq = 0 ; jq < pOld->M ; jq +=2)
     { free (pcOld[jq]) ; free (pcNew[jq]) ; }
   free (pcOld) ; free (pcNew) ;
@@ -1074,12 +1074,12 @@ static PBWT *referencePhase4 (PBWT *pOld, PBWT *pRef)
 
 /************* top level selector for referencePhase *****************/
 
-PBWT *referencePhase (PBWT *pOld, char *fileNameRoot)
+PBWT *PBWT::referencePhase (PBWT *pOld, char *fileNameRoot)
 {
   fprintf (logFile, "phase against reference %s\n", fileNameRoot) ;
   if (pOld->M % 2) die ("phase requires that M = %d is even", pOld->M) ;
   if (!pOld || !pOld->yz || !pOld->sites) 
-    die ("referencePhase called without existing pbwt with sites") ;
+    die ("referencePhase called without existing PBWT::pbwt with sites") ;
 
   PBWT *pRef = pbwtReadAll (fileNameRoot) ;
   if (!pRef->sites) die ("CNew pbwt %s in referencePhase has no sites", fileNameRoot) ;
@@ -1087,7 +1087,7 @@ PBWT *referencePhase (PBWT *pOld, char *fileNameRoot)
     die ("mismatching chrom in referencePhase: old %s, ref %s", pOld->chrom, pRef->chrom) ;
 
   /* reduce both down to the intersecting sites */
-  pOld = pbwtSelectSites (pOld, pRef->sites, FALSE) ;
+  pOld = PBWT::pbwtSelectSites (pOld, pRef->sites, FALSE) ;
   pRef = pbwtSelectSites (pRef, pOld->sites, FALSE) ;
   if (!pOld->N) die ("no overlapping sites in referencePhase") ;
 
@@ -1132,16 +1132,16 @@ static PBWT *referenceImpute3 (PBWT *pOld, PBWT *pRef, PBWT *pFrame,
 {
   int i, j, k ;
 
-  fprintf (logFile, "Reference impute using maximal matches: ") ;
-  if (nSparse > 1) fprintf (logFile, "(nSparse = %d, fSparse = %.2f) ", nSparse, fSparse) ;
+  fprintf (PBWT::logFile, "Reference impute using maximal matches: ") ;
+  if (nSparse > 1) fprintf (PBWT::logFile, "(nSparse = %d, fSparse = %.2f) ", nSparse, fSparse) ;
 
   /* build the array of maximal matches into pFrame for each sequence in pOld */
   maxMatch = myalloc (pOld->M, Array) ;
   for (j = 0 ; j < pOld->M ; ++j) maxMatch[j] = arrayCreate (1024, MatchSegment) ;
   if (pOld == pFrame)		/* self-imputing - no sparse option yet */
-    matchMaximalWithin (pFrame, reportMatch) ;
+    PBWT::matchMaximalWithin (pFrame, reportMatch) ;
   else
-    matchSequencesSweepSparse (pFrame, pOld, nSparse, reportMatchSparse) ;
+    PBWT::matchSequencesSweepSparse (pFrame, pOld, nSparse, reportMatchSparse) ;
 
   for (j = 0 ; j < pOld->M ; ++j)	/* add terminating element to arrays */
     { if (nSparse > 1) /* can't guarantee order of sparse segments */
@@ -1154,18 +1154,18 @@ static PBWT *referenceImpute3 (PBWT *pOld, PBWT *pRef, PBWT *pFrame,
         qsort (arrp(maxMatch[j], 0, MatchSegment), arrayMax(maxMatch[j]), 
 	       sizeof(MatchSegment), matchSegmentCompare) ;
 #endif
-      if (isCheck) fprintf (logFile, "%ld matches found to query %d\n", 
+      if (PBWT::isCheck) fprintf (PBWT::logFile, "%ld matches found to query %d\n", 
 			    arrayMax(maxMatch[j]), j) ;
       /* add an end marker */
       MatchSegment *ms = arrayp(maxMatch[j],arrayMax(maxMatch[j]),MatchSegment) ;
       ms->jRef = ms[-1].jRef ; ms->end = pOld->N+1 ; ms->start = pOld->N ;
     }
 
-  PbwtCursor *uOld = pbwtCursorCreate (pOld, TRUE, TRUE) ;
-  PbwtCursor *uRef = pbwtCursorCreate (pRef, TRUE, TRUE) ;
-  PBWT *pNew = pbwtCreate (pOld->M, pRef->N) ;	/* this will hold the imputed sequence */
+  PBWT::PbwtCursor *uOld = PBWT::pbwtCursorCreate (pOld, TRUE, TRUE) ;
+  PBWT::PbwtCursor *uRef = PBWT::pbwtCursorCreate (pRef, TRUE, TRUE) ;
+  PBWT *pNew = PBWT::pbwtCreate (pOld->M, pRef->N) ;	/* this will hold the imputed sequence */
   pNew->isRefFreq = TRUE ;
-  PbwtCursor *uNew = pbwtCursorCreate (pNew, TRUE, TRUE) ;
+  PBWT::PbwtCursor *uNew = PBWT::pbwtCursorCreate (pNew, TRUE, TRUE) ;
   uchar *x = myalloc (pOld->M, uchar) ;     /* uNew->y values in original sort order */
   double *p = myalloc (pOld->M, double) ;   /* estimated prob of uNew->y in original sort order */
   int *aRefInv = myalloc (pRef->M, int) ;   /* holds the inverse mapping from uRef->a[i] -> i */
@@ -1179,18 +1179,18 @@ static PBWT *referenceImpute3 (PBWT *pOld, PBWT *pRef, PBWT *pFrame,
 
   int kOld = 0, kRef = 0 ;
   while (kRef < pRef->N)
-    { if (arrp(pRef->sites,kRef,Site)->x == arrp(pFrame->sites,kOld,Site)->x
-	  && arrp(pRef->sites,kRef,Site)->varD == arrp(pFrame->sites,kOld,Site)->varD)
-	{ pbwtCursorForwardsRead (uOld) ; ++kOld ;
+    { if (arrp(pRef->sites,kRef,PBWT::Site)->x == arrp(pFrame->sites,kOld,PBWT::Site)->x
+	  && arrp(pRef->sites,kRef,PBWT::Site)->varD == arrp(pFrame->sites,kOld,PBWT::Site)->varD)
+	{ PBWT::pbwtCursorForwardsRead (uOld) ; ++kOld ;
 	  for (j = 0 ; j < pOld->M ; ++j)
 	    while (kOld >= (arrp(maxMatch[j],firstSeg[j],MatchSegment)->end & SPARSE_MASK)) ++firstSeg[j] ;
 	}
       for (i = 0 ; i < pRef->M ; ++i) aRefInv[uRef->a[i]] = i ;
       double psum = 0, xsum = 0, pxsum = 0 ; int n = 0 ;
-      arrp(pRef->sites,kRef,Site)->refFreq = (uRef->M - uRef->c) / (double) pRef->M ;
+      arrp(pRef->sites,kRef,PBWT::Site)->refFreq = (uRef->M - uRef->c) / (double) pRef->M ;
       if (pOld == pFrame)	/* find which samples are missing at this site */
 	{ if (!arr(pRef->missingOffset, kRef, long)) bzero (missing, pRef->M) ;
-	  else unpack3 (arrp(pRef->zMissing,arr(pRef->missingOffset,kRef,long), uchar), 
+	  else PBWT::unpack3 (arrp(pRef->zMissing,arr(pRef->missingOffset,kRef,long), uchar), 
 			pRef->M, missing, 0) ;
 	}
       for (j = 0 ; j < pOld->M ; ++j)
@@ -1212,9 +1212,9 @@ static PBWT *referenceImpute3 (PBWT *pOld, PBWT *pRef, PBWT *pFrame,
 	      ++m ;
 	    }
 	  if (sum == 0) 
-	    { x[j] = arrp(pRef->sites,kRef,Site)->refFreq > 0.5 ? 1 : 0 ;
-	      xDosage[j] = arrp(pRef->sites,kRef,Site)->refFreq ;
-	      if (isStats) pImp[kRef][j] = xDosage[j] ;
+	    { x[j] = arrp(pRef->sites,kRef,PBWT::Site)->refFreq > 0.5 ? 1 : 0 ;
+	      xDosage[j] = arrp(pRef->sites,kRef,PBWT::Site)->refFreq ;
+	      if (PBWT::isStats) pImp[kRef][j] = xDosage[j] ;
 	      ++nConflicts ;
 	    }
 	  else 
@@ -1224,33 +1224,33 @@ static PBWT *referenceImpute3 (PBWT *pOld, PBWT *pRef, PBWT *pFrame,
 	      psum += p ;
 	      xsum += x[j] ;
 	      pxsum += p*x[j] ;
-	      if (isStats) pImp[kRef][j] = p ;
+	      if (PBWT::isStats) pImp[kRef][j] = p ;
 	      ++n ;
 	    }
 	}
 	  
       for (j = 0 ; j < pOld->M ; ++j) uNew->y[j] = x[uNew->a[j]] ; /* transfer to uNew */
-      pbwtCursorWriteForwards (uNew) ;
+      PBWT::pbwtCursorWriteForwards (uNew) ;
       /* need to sort the dosages into uNew cursor order as well */
       for (j = 0 ; j < pOld->M ; ++j) yDosage[j] = xDosage[uNew->a[j]] ;
-      pbwtDosageStore (pNew, yDosage, kRef) ;
+      PBWT::pbwtDosageStore (pNew, yDosage, kRef) ;
       
       if (n) 
 	{ psum /= n ; xsum /= n ; pxsum /= n ;
 	  double varianceProduct = psum*(1.0-psum)*xsum*(1.0-xsum) ;
 	  if (varianceProduct)
-	    arrp(pRef->sites,kRef,Site)->imputeInfo = 
+	    arrp(pRef->sites,kRef,PBWT::Site)->imputeInfo = 
 	      (pxsum - psum*psum) / sqrt (varianceProduct) ;
 	  else
-	    arrp(pRef->sites,kRef,Site)->imputeInfo = 1.0 ;
+	    arrp(pRef->sites,kRef,PBWT::Site)->imputeInfo = 1.0 ;
 	}
-      pbwtCursorForwardsRead (uRef) ; ++kRef ;
+      PBWT::pbwtCursorForwardsRead (uRef) ; ++kRef ;
     }
-  pbwtCursorToAFend (uNew, pNew) ;
+  PBWT::pbwtCursorToAFend (uNew, pNew) ;
 
-  if (nConflicts) fprintf (logFile, "%d times where no overlapping matches because query does not match any reference - set imputed value to 0\n", nConflicts) ;
+  if (nConflicts) fprintf (PBWT::logFile, "%d times where no overlapping matches because query does not match any reference - set imputed value to 0\n", nConflicts) ;
 
-  pbwtCursorDestroy (uOld) ; pbwtCursorDestroy (uRef) ; pbwtCursorDestroy (uNew) ;
+  PBWT::pbwtCursorDestroy (uOld) ; PBWT::pbwtCursorDestroy (uRef) ; PBWT::pbwtCursorDestroy (uNew) ;
   free (aRefInv) ; free (firstSeg) ;
   for (j = 0 ; j < pOld->M ; ++j) free (maxMatch[j]) ; free (maxMatch) ;
   free (xDosage) ; free (yDosage) ; if (missing) free (missing) ;
@@ -1259,7 +1259,7 @@ static PBWT *referenceImpute3 (PBWT *pOld, PBWT *pRef, PBWT *pFrame,
 
 /*********************************************************************/
 
-  PBWT *referenceImpute (PBWT *pOld, char *fileNameRoot, int nSparse, double fSparse)
+  PBWT *PBWT::referenceImpute (PBWT *pOld, char *fileNameRoot, int nSparse, double fSparse)
 {
   /* Preliminaries */
   fprintf (logFile, "impute against reference %s\n", fileNameRoot) ;
@@ -1317,7 +1317,7 @@ static PBWT *referenceImpute3 (PBWT *pOld, PBWT *pRef, PBWT *pFrame,
 
 /*********************************************************************/
 
-PBWT *imputeMissing (PBWT *pOld)
+PBWT *PBWT::imputeMissing (PBWT *pOld)
 /* current strategy is for HRC: use framework of sites for which we have complete data */
 {
   int k ;
@@ -1369,7 +1369,7 @@ PBWT *imputeMissing (PBWT *pOld)
 
 /*********************************************************************/
 
-void genotypeCompare (PBWT *p, char *fileNameRoot)
+void PBWT::genotypeCompare (PBWT *p, char *fileNameRoot)
 {
   fprintf (logFile, "compare genotypes to reference %s\n", fileNameRoot) ;
   if (!p || !p->yz || !p->sites) 
@@ -1407,16 +1407,16 @@ static void genotypeComparePbwt (PBWT *p, PBWT *q)
   long nd[12] ; for (i = 12 ; i-- ;) nd[i] = 0 ;
   long nd1[12] ; for (i = 12 ; i-- ;) nd1[i] = 0 ;
 
-  PbwtCursor *up = pbwtCursorCreate (p, TRUE, TRUE) ;
-  PbwtCursor *uq = pbwtCursorCreate (q, TRUE, TRUE) ;
+  PBWT::PbwtCursor *up = PBWT::pbwtCursorCreate (p, TRUE, TRUE) ;
+  PBWT::PbwtCursor *uq = PBWT::pbwtCursorCreate (q, TRUE, TRUE) ;
   uchar *xp = myalloc (p->M, uchar), *xq = myalloc (q->M, uchar) ;
   for (k = 0 ; k < p->N ; ++k)
     { double f = (p->M - up->c) / (double)p->M ; 
-      if (arrp (p->sites,k,Site)->refFreq) { f = arrp (p->sites,k,Site)->refFreq ; isRefFreq = TRUE ; }
+      if (arrp (p->sites,k,PBWT::Site)->refFreq) { f = arrp (p->sites,k,PBWT::Site)->refFreq ; isRefFreq = TRUE ; }
       for (ff = 0 ; f*100 > fBound[ff] ; ) ++ff ; fsum[ff] += f*100 ; ++nsum[ff] ;
-      if (arrp(p->sites,k,Site)->imputeInfo < 1.0) { isum[ff] += arrp(p->sites,k,Site)->imputeInfo ; ++ni[ff] ; }
+      if (arrp(p->sites,k,PBWT::Site)->imputeInfo < 1.0) { isum[ff] += arrp(p->sites,k,PBWT::Site)->imputeInfo ; ++ni[ff] ; }
       for (j = 0 ; j < p->M ; ++j) { xp[up->a[j]] = up->y[j] ; xq[uq->a[j]] = uq->y[j] ; }
-      if (isDosage) dos = pbwtDosageRetrieve (p, up, dos, k) ;
+      if (isDosage) dos = PBWT::pbwtDosageRetrieve (p, up, dos, k) ;
       for (j = 0 ; j < p->M ; j += 2) 
 	{ i = 3*(xp[j]+xp[j+1]) + xq[j]+xq[j+1] ;
 	  ++n[ff][i] ;
@@ -1429,9 +1429,9 @@ static void genotypeComparePbwt (PBWT *p, PBWT *q)
 	      ++nd[id] ; if (xp[j+1]) ++nd1[id] ;
 	    }
 	}
-      pbwtCursorForwardsRead (up) ; pbwtCursorForwardsRead (uq) ;
+      PBWT::pbwtCursorForwardsRead (up) ; PBWT::pbwtCursorForwardsRead (uq) ;
     }
-  pbwtCursorDestroy (up) ; pbwtCursorDestroy (uq) ;
+  PBWT::pbwtCursorDestroy (up) ; PBWT::pbwtCursorDestroy (uq) ;
 
   /* report */
 
@@ -1486,7 +1486,7 @@ static void genotypeComparePbwt (PBWT *p, PBWT *q)
 
 /*********** routines to corrupt data to explore robustness *************/
 
-PBWT *pbwtCorruptSites (PBWT *pOld, double pSite, double pChange)
+PBWT *PBWT::pbwtCorruptSites (PBWT *pOld, double pSite, double pChange)
 {
   int M = pOld->M, N = pOld->N ;
   PBWT *pNew = pbwtCreate (M, N) ;
@@ -1532,7 +1532,7 @@ PBWT *pbwtCorruptSites (PBWT *pOld, double pSite, double pChange)
   return pNew ;
 }
 
-PBWT *pbwtCorruptSamples (PBWT *pOld, double pSample, double pChange)
+PBWT *PBWT::pbwtCorruptSamples (PBWT *pOld, double pSample, double pChange)
 {
   int M = pOld->M, N = pOld->N ;
   PBWT *pNew = pbwtCreate (M, N) ;
@@ -1580,7 +1580,7 @@ PBWT *pbwtCorruptSamples (PBWT *pOld, double pSample, double pChange)
   return pNew ;
 }
 
-PBWT *pbwtCopySamples (PBWT *pOld, int MCNew, double meanLength)
+PBWT *PBWT::pbwtCopySamples (PBWT *pOld, int MCNew, double meanLength)
 {
   if (!pOld || !pOld->yz) die ("copySample called without an existing pbwt") ;
   PBWT *pNew = pbwtCreate (MCNew, pOld->N) ;
@@ -1653,7 +1653,7 @@ static inline uchar *dosageStore (uchar *z, uchar d, int count)
   return z ;
 }
 
-void pbwtDosageStore (PBWT *p, double *dosage, int k)
+void PBWT::pbwtDosageStore (PBWT *p, double *dosage, int k)
 {
   if (!p->dosageOffset) die ("dosageStore called without p->dosageOffset") ;
   long max = arrayMax(p->zDosage) ;
@@ -1675,7 +1675,7 @@ void pbwtDosageStore (PBWT *p, double *dosage, int k)
   arrayMax(p->zDosage) += z - arrp(p->zDosage, max, uchar) ;
 }
 
-double *pbwtDosageRetrieve (PBWT *p, PbwtCursor *u, double *dosage, int k)
+double *PBWT::pbwtDosageRetrieve (PBWT *p, PbwtCursor *u, double *dosage, int k)
 {
   if (!dosage) dosage = myalloc (p->M, double) ;
   if (!p->dosageOffset) die ("dosageRetrieve called without p->dosageOffset") ;
